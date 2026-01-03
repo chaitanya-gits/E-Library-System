@@ -173,27 +173,41 @@ jobs:
 
       - name: Wait for services to be healthy
         run: |
-          echo "Waiting for services..."
-          sleep 60
+          echo "Waiting for backend to be ready..."
 
-          # Check backend health
-          for i in {1..30}; do
-            if curl -s http://localhost:8080/actuator/health | grep -q "UP"; then
-              echo "Backend is healthy!"
-              break
+          # Wait up to 5 minutes for backend health
+          max_attempts=60
+          attempt=0
+
+          until curl -f http://localhost:8080/actuator/health 2>/dev/null | grep -q "UP"; do
+            attempt=$((attempt + 1))
+            if [ $attempt -ge $max_attempts ]; then
+              echo "❌ Backend failed to become healthy after $max_attempts attempts"
+              docker compose ps
+              docker compose logs backend
+              exit 1
             fi
-            echo "Waiting for backend... ($i/30)"
+            echo "⏳ Waiting for backend... (attempt $attempt/$max_attempts)"
             sleep 5
           done
+
+          echo "✅ Backend is healthy!"
 
       - name: Run API smoke tests
         run: |
           # Test API endpoints
           echo "Testing API endpoints..."
+
+          echo "Testing /api/books..."
           curl -f http://localhost:8080/api/books || exit 1
+
+          echo "Testing /api/users..."
           curl -f http://localhost:8080/api/users || exit 1
+
+          echo "Testing /api/categories..."
           curl -f http://localhost:8080/api/categories || exit 1
-          echo "API smoke tests passed!"
+
+          echo "✅ All API smoke tests passed!"
 
       - name: Collect Docker logs
         if: failure()
