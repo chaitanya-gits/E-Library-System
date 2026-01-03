@@ -6,8 +6,7 @@ A containerized library management system built with **Spring Boot** (backend) a
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-green)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Docker](https://img.shields.io/badge/Docker-Compose-blue)
-![MongoDB]([https://img.shields.io/badge/PostgreSQL-16-blue](https://img.shields.io/badge/MongoDB-green?logo=mongodb&logoColor=white
-))
+![MongoDB](https://img.shields.io/badge/MongoDB-green?logo=mongodb&logoColor=white)
 
 ---
 
