@@ -64,6 +64,11 @@ const SettingsPage = () => {
 
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
+
+            // Dispatch event to update Sidebar
+            window.dispatchEvent(new CustomEvent('userUpdated', {
+                detail: { user: updatedUser }
+            }));
         }
     };
 
@@ -160,10 +165,7 @@ const SettingsPage = () => {
                         <p className="profile-role">
                             Library Member • Member since {formatMembershipDate(user.membershipDate)}
                         </p>
-                        <div className="profile-badges">
-                            <span className="badge badge-pro">PRO PLAN</span>
-                            <span className="badge badge-verified">VERIFIED</span>
-                        </div>
+
                     </div>
                 </div>
 

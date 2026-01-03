@@ -1,10 +1,61 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/BookDetailsModal.css';
 
 const BookDetailsModal = ({ book, onClose }) => {
     const navigate = useNavigate();
+    const [isDownloaded, setIsDownloaded] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(false);
+
+    useEffect(() => {
+        if (book) {
+            // Check if book is downloaded
+            const downloadedBooks = JSON.parse(localStorage.getItem('downloadedBooks') || '[]');
+            setIsDownloaded(downloadedBooks.some(b => b.id === book.id));
+
+            // Check if book is favorite
+            const favoriteBooks = JSON.parse(localStorage.getItem('favoriteBooks') || '[]');
+            setIsFavorite(favoriteBooks.some(b => b.id === book.id));
+        }
+    }, [book]);
+
     if (!book) return null;
+
+    const handleDownloadToggle = () => {
+        const downloadedBooks = JSON.parse(localStorage.getItem('downloadedBooks') || '[]');
+
+        if (isDownloaded) {
+            // Remove from downloads
+            const updatedBooks = downloadedBooks.filter(b => b.id !== book.id);
+            localStorage.setItem('downloadedBooks', JSON.stringify(updatedBooks));
+            setIsDownloaded(false);
+        } else {
+            // Add to downloads
+            downloadedBooks.push(book);
+            localStorage.setItem('downloadedBooks', JSON.stringify(downloadedBooks));
+            setIsDownloaded(true);
+        }
+
+        window.dispatchEvent(new CustomEvent('booksUpdated'));
+    };
+
+    const handleFavoriteToggle = () => {
+        const favoriteBooks = JSON.parse(localStorage.getItem('favoriteBooks') || '[]');
+
+        if (isFavorite) {
+            // Remove from favorites
+            const updatedBooks = favoriteBooks.filter(b => b.id !== book.id);
+            localStorage.setItem('favoriteBooks', JSON.stringify(updatedBooks));
+            setIsFavorite(false);
+        } else {
+            // Add to favorites
+            favoriteBooks.push(book);
+            localStorage.setItem('favoriteBooks', JSON.stringify(favoriteBooks));
+            setIsFavorite(true);
+        }
+
+        window.dispatchEvent(new CustomEvent('booksUpdated'));
+    };
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -67,19 +118,37 @@ const BookDetailsModal = ({ book, onClose }) => {
                                 </svg>
                                 Read Sample
                             </button>
-                            <button className="icon-action-btn">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <button
+                                className={`icon-action-btn ${isFavorite ? 'active favorite' : ''}`}
+                                onClick={handleFavoriteToggle}
+                                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill={isFavorite ? 'currentColor' : 'none'}
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                >
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                 </svg>
                             </button>
-                            <button className="icon-action-btn">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <circle cx="18" cy="5" r="3" />
-                                    <circle cx="6" cy="12" r="3" />
-                                    <circle cx="18" cy="19" r="3" />
-                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                                </svg>
+                            <button
+                                className={`icon-action-btn ${isDownloaded ? 'active downloaded' : ''}`}
+                                onClick={handleDownloadToggle}
+                                title={isDownloaded ? 'Remove download' : 'Download for offline'}
+                            >
+                                {isDownloaded ? (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                ) : (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                )}
                             </button>
                         </div>
                     </div>

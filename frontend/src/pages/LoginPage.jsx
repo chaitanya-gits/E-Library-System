@@ -82,7 +82,7 @@ const LoginPage = () => {
             // Store user data in localStorage for session management
             localStorage.setItem('user', JSON.stringify(response.data));
             localStorage.setItem('isAuthenticated', 'true');
-            navigate('/');
+            navigate('/books');
         } catch (err) {
             console.error(err);
             if (err.response && err.response.data && err.response.data.message) {

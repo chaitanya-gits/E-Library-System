@@ -247,6 +247,28 @@
     color: #111827;
 }
 
+.icon-action-btn.active.favorite {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #ef4444;
+}
+
+.icon-action-btn.active.favorite:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
+.icon-action-btn.active.downloaded {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #059669;
+}
+
+.icon-action-btn.active.downloaded:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+}
+
 .icon-action-btn svg {
     width: 20px;
     height: 20px;
