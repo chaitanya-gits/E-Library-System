@@ -176,18 +176,7 @@ function MyLibraryPage() {
         navigate(`/read/${book.id}`, { state: { book } });
     };
 
-    const handleAddToLibrary = (book, status) => {
-        const savedProgress = JSON.parse(localStorage.getItem('readingProgress') || '{}');
-        savedProgress[book.id] = {
-            ...savedProgress[book.id],
-            currentPage: savedProgress[book.id]?.currentPage || 0,
-            progress: savedProgress[book.id]?.progress || 0,
-            lastRead: Date.now(),
-            timeSpent: savedProgress[book.id]?.timeSpent || 0
-        };
-        localStorage.setItem('readingProgress', JSON.stringify(savedProgress));
-        loadReadingData();
-    };
+
 
     // Filter books based on active tab
     const getFilteredBooks = () => {

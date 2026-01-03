@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const CategoryCard = ({ title, image }) => {
     // Generate a placeholder color or gradient based on title length if no image

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import '../styles/ReadingPage.css';
 
@@ -50,7 +50,7 @@ const ReadingPage = () => {
             // Save progress when leaving
             saveProgress();
         };
-    }, [id]);
+    }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Track time every minute
     useEffect(() => {
@@ -64,7 +64,7 @@ const ReadingPage = () => {
             }
             updateTimeSpent(); // Save on unmount
         };
-    }, [sessionStartTime, book]);
+    }, [sessionStartTime, book]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const updateTimeSpent = () => {
         if (!sessionStartTime || !book) return;
@@ -176,7 +176,7 @@ const ReadingPage = () => {
                             <span className="drop-cap">T</span>his is a sample reading view for <strong>{book.title}</strong>.
                         </p>
                         <p>
-                            No matter your goals, {book.title} offers a proven framework for improving--every day. {book.author}, one of the world's leading experts on habit formation, reveals practical strategies that will teach you exactly how to form good habits, break bad ones, and master the tiny behaviors that lead to remarkable results.
+                            No matter your goals, {book.title} offers a proven framework for improving--every day. {book.author}, one of the world&apos;s leading experts on habit formation, reveals practical strategies that will teach you exactly how to form good habits, break bad ones, and master the tiny behaviors that lead to remarkable results.
                         </p>
                         <p>
                             Here continues the text of the book in a comfortable reading format, mimicking the experience of a Kindle Paperwhite in light mode.

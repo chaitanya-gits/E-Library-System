@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import '../styles/SidebarDropdown.css';
 
@@ -42,7 +42,7 @@ const Sidebar = () => {
         };
     }, []);
 
-    const [isDarkMode, setIsDarkMode] = useState(() => {
+    const [isDarkMode] = useState(() => {
         const savedMode = localStorage.getItem('theme');
         return savedMode === 'dark';
     });
@@ -57,10 +57,7 @@ const Sidebar = () => {
         }
     }, [isDarkMode]);
 
-    const handleThemeToggle = (e) => {
-        e.stopPropagation();
-        setIsDarkMode(!isDarkMode);
-    };
+
 
     const handleLogout = () => {
         localStorage.removeItem('token');
