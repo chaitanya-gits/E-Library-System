@@ -30,9 +30,9 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# Create a non-root user for security (ignore if already exists)
-RUN groupadd --gid 1000 appgroup 2>/dev/null || true && \
-    useradd --uid 1000 --gid 1000 --shell /bin/bash appuser 2>/dev/null || true
+# Create a non-root user for security
+RUN groupadd -r appgroup && \
+    useradd -r -g appgroup appuser
 
 # Copy the built JAR from builder stage
 COPY --from=builder /app/target/*.jar app.jar
