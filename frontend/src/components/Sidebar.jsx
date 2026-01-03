@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import '../styles/SidebarDropdown.css';
+
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -26,18 +28,39 @@ const Sidebar = () => {
 
         window.addEventListener('profileImageUpdated', handleProfileUpdate);
 
-        const handleStorageChange = (e) => {
-            if (e.key === 'profileImage') {
-                setProfileImage(e.newValue);
+        const handleUserUpdate = (event) => {
+            if (event.detail?.user) {
+                setUser(event.detail.user);
             }
         };
-        window.addEventListener('storage', handleStorageChange);
+
+        window.addEventListener('userUpdated', handleUserUpdate);
 
         return () => {
             window.removeEventListener('profileImageUpdated', handleProfileUpdate);
-            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('userUpdated', handleUserUpdate);
         };
     }, []);
+
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        const savedMode = localStorage.getItem('theme');
+        return savedMode === 'dark';
+    });
+
+    useEffect(() => {
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [isDarkMode]);
+
+    const handleThemeToggle = (e) => {
+        e.stopPropagation();
+        setIsDarkMode(!isDarkMode);
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -77,46 +100,69 @@ const Sidebar = () => {
 
     return (
         <aside className="sidebar">
-            <div className="brand">
-                THE BOOKS
+            {/* Brand */}
+            <div className="brand" onClick={() => navigate('/books')} style={{ cursor: 'pointer' }}>
+                <span className="brand-text">StacXlabs</span>
             </div>
 
+            {/* Browse Section */}
             <div className="menu-group">
-                <div className="menu-label">Menu</div>
+                <div className="menu-label">BROWSE</div>
                 <NavLink to="/books" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                    <div className="nav-item-icon-bg">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <div className="nav-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
                     </div>
                     <span>Discover</span>
                 </NavLink>
 
-                <div className="nav-item">
-                    <div className="nav-item-icon-bg">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <NavLink to="/category" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                    <div className="nav-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
                     </div>
                     <span>Category</span>
-                </div>
+                </NavLink>
+            </div>
 
-                <NavLink to="/loans" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                    <div className="nav-item-icon-bg">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            {/* Library Section */}
+            <div className="menu-group">
+                <div className="menu-label">LIBRARY</div>
+                <NavLink to="/library" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                    <div className="nav-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
                     </div>
                     <span>My Library</span>
                 </NavLink>
 
-                <div className="nav-item">
-                    <div className="nav-item-icon-bg">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <NavLink to="/downloads" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                    <div className="nav-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
                     </div>
-                    <span>Download</span>
-                </div>
+                    <span>Downloads</span>
+                </NavLink>
 
-                <div className="nav-item">
-                    <div className="nav-item-icon-bg">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                <NavLink to="/favorites" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                    <div className="nav-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
                     </div>
-                    <span>Favorite</span>
-                </div>
+                    <span>Favorites</span>
+                </NavLink>
             </div>
 
             {/* User Profile Section */}
@@ -129,9 +175,11 @@ const Sidebar = () => {
                     style={{ display: 'none' }}
                 />
 
-                {/* Simple Dropdown - Only Settings, Dark Mode, Log Out */}
+                {/* Dropdown Menu - New Design */}
+                {/* Dropdown Menu - New Design */}
                 {showUserMenu && (
                     <div className="user-dropdown-menu">
+                        {/* Menu Items */}
                         <div className="user-dropdown-item" onClick={handleSettings}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -139,24 +187,28 @@ const Sidebar = () => {
                             </svg>
                             <span>Settings</span>
                         </div>
-                        <div className="user-dropdown-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+
+                        <div className="user-dropdown-item upgrade-item" onClick={() => navigate('/upgrade')}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="icon-blue">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                             </svg>
-                            <span>Dark Mode</span>
+                            <span>Upgrade Plan</span>
                         </div>
-                        <div className="user-dropdown-item" onClick={handleLogout}>
+
+                        <div className="dropdown-separator"></div>
+
+                        <div className="user-dropdown-item logout-item" onClick={handleLogout}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                                 <polyline points="16 17 21 12 16 7"></polyline>
                                 <line x1="21" y1="12" x2="9" y2="12"></line>
                             </svg>
-                            <span>Log Out</span>
+                            <span>Logout</span>
                         </div>
                     </div>
                 )}
 
-                {/* Profile Bar - Only avatar and name */}
+                {/* Profile Bar */}
                 <div className="sidebar-user-profile" onClick={toggleUserMenu}>
                     <div
                         className="user-profile-avatar"
@@ -171,20 +223,17 @@ const Sidebar = () => {
                             backgroundPosition: 'center'
                         } : {}}
                     >
-                        {!profileImage && (user?.name ? user.name.charAt(0).toUpperCase() : 'D')}
+                        {/* Empty if no image to show clean gray circle */}
                     </div>
-                    <span className="user-profile-name">{user?.name || 'Davis Workman'}</span>
-                    <button className="user-profile-toggle-btn" aria-label="Toggle menu">
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            style={{ transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                        >
+                    <div className="user-profile-info">
+                        <span className="user-profile-name">{user?.name || 'User'}</span>
+                        <span className="user-profile-plan">Basic Plan</span>
+                    </div>
+                    <div className="user-profile-toggle-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="chevron-icon">
                             <polyline points="18 15 12 9 6 15"></polyline>
                         </svg>
-                    </button>
+                    </div>
                 </div>
             </div>
         </aside>

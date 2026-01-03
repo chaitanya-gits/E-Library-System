@@ -1,0 +1,22 @@
+/* Sidebar Dropdown Specifics */
+.logout-item {
+    color: #ef4444 !important;
+    /* Red color */
+}
+
+.logout-item:hover {
+    background: rgba(239, 68, 68, 0.08) !important;
+}
+
+.logout-item svg {
+    color: #ef4444 !important;
+}
+
+.upgrade-item .icon-blue {
+    color: #0071e3 !important;
+    /* Blue color */
+}
+
+.upgrade-item:hover {
+    background: rgba(0, 113, 227, 0.06) !important;
+}
