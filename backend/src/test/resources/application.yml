@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: e-library-system
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+
+server:
+  port: 0
+
+logging:
+  level:
+    com.elibrary: INFO
+    org.springframework: WARN

@@ -8,10 +8,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class LoanDTO {
-    private String id;
-    private String bookId;
+    private Long id;
+    private Long bookId;
     private String bookTitle;
-    private String userId;
+    private Long userId;
     private String userName;
     private LocalDate loanDate;
     private LocalDate dueDate;

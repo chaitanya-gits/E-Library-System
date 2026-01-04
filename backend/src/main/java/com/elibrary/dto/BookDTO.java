@@ -7,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class BookDTO {
-    private String id;
+    private Long id;
     private String title;
     private String author;
     private String isbn;
@@ -16,6 +16,6 @@ public class BookDTO {
     private Boolean available;
     private Integer totalCopies;
     private Integer availableCopies;
-    private String categoryId;
+    private Long categoryId;
     private String categoryName;
 }

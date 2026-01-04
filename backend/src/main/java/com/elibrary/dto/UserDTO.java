@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class UserDTO {
-    private String id;
+    private Long id;
     private String name;
     private String email;
     private String password;

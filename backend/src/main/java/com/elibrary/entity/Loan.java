@@ -1,14 +1,12 @@
 package com.elibrary.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Document(collection = "loans")
+@Entity
+@Table(name = "loans")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,38 +17,50 @@ import java.time.LocalDateTime;
 public class Loan {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @DBRef
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
-    @DBRef
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Field("loan_date")
+    @Column(name = "loan_date")
     private LocalDate loanDate;
 
-    @Field("due_date")
+    @Column(name = "due_date")
     private LocalDate dueDate;
 
-    @Field("return_date")
+    @Column(name = "return_date")
     private LocalDate returnDate;
 
     @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private LoanStatus status = LoanStatus.ACTIVE;
 
+    @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Field("created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Field("updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Use constructor or service for status setting, removing PrePersist logic for
-    // now
-    // or handle in Service layer (recommended for Mongo)
-    // For simple migration, we trust Service sets these or we use default values.
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     public enum LoanStatus {
         ACTIVE, RETURNED, OVERDUE

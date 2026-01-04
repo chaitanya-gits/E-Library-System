@@ -1,14 +1,12 @@
 package com.elibrary.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.time.LocalDateTime;
 
-@Document(collection = "categories")
+@Entity
+@Table(name = "categories")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,20 +17,30 @@ import java.time.LocalDateTime;
 public class Category {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotBlank(message = "Category name is required")
-    @Indexed(unique = true)
+    @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    // Remove OneToMany books list, managed by BookRepository queries
-    // private List<Book> books = new ArrayList<>();
-
-    @Field("created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Field("updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
