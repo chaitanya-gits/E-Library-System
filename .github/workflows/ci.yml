@@ -162,52 +162,35 @@ jobs:
         run: |
           cat > .env << EOF
           DB_NAME=elibrary
-          DB_USER=elibrary
-          DB_PASSWORD=test_password
           BACKEND_PORT=8080
-          FRONTEND_PORT=3000
           EOF
 
       - name: Start containers
-        run: docker compose up -d --build
+        run: docker compose up -d
 
-      - name: Wait for services to be healthy
+      - name: Wait for backend to be healthy
         run: |
           echo "Waiting for backend to be ready..."
-
-          # Wait up to 5 minutes for backend health
-          max_attempts=60
-          attempt=0
-
-          until curl -f http://localhost:8080/actuator/health 2>/dev/null | grep -q "UP"; do
-            attempt=$((attempt + 1))
-            if [ $attempt -ge $max_attempts ]; then
-              echo "❌ Backend failed to become healthy after $max_attempts attempts"
-              docker compose ps
-              docker compose logs backend
-              exit 1
+          # Max 30 attempts, 5 seconds apart
+          for i in {1..30}; do
+            if curl -f http://localhost:8080/actuator/health | grep -q "UP"; then
+              echo "✅ Backend is healthy!"
+              exit 0
             fi
-            echo "⏳ Waiting for backend... (attempt $attempt/$max_attempts)"
+            echo "⏳ Waiting for backend... ($i/30)"
             sleep 5
           done
-
-          echo "✅ Backend is healthy!"
+          echo "❌ Backend failed to become healthy in time"
+          docker compose logs backend
+          exit 1
 
       - name: Run API smoke tests
         run: |
-          # Test API endpoints
           echo "Testing API endpoints..."
-
-          echo "Testing /api/books..."
           curl -f http://localhost:8080/api/books || exit 1
-
-          echo "Testing /api/users..."
           curl -f http://localhost:8080/api/users || exit 1
-
-          echo "Testing /api/categories..."
           curl -f http://localhost:8080/api/categories || exit 1
-
-          echo "✅ All API smoke tests passed!"
+          echo "✅ API smoke tests passed!"
 
       - name: Collect Docker logs
         if: failure()

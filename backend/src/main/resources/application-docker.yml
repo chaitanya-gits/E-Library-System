@@ -2,19 +2,9 @@ server:
   port: 8080
 
 spring:
-  datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:elibrary}
-    username: ${DB_USER:elibrary}
-    password: ${DB_PASSWORD:elibrary}
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    mongodb:
+      uri: mongodb://${MONGODB_HOST:mongodb}:${MONGODB_PORT:27017}/${MONGODB_DATABASE:elibrary}
 
 logging:
   level:

@@ -41,23 +41,11 @@ public class UserService {
             throw new BusinessException("User with email " + dto.getEmail() + " already exists");
         }
 
-        System.out.println("DEBUG: Creating user with email: " + dto.getEmail());
-        System.out.println("DEBUG: Password from DTO: "
-                + (dto.getPassword() != null ? "***" + dto.getPassword().length() + " chars***" : "NULL"));
-
         User user = toEntity(dto);
-        System.out.println("DEBUG: Password after toEntity: "
-                + (user.getPassword() != null ? "***" + user.getPassword().length() + " chars***" : "NULL"));
-
         // In a real app, hash the password here
         user.setPassword(dto.getPassword());
-        System.out.println("DEBUG: Password after setPassword: "
-                + (user.getPassword() != null ? "***" + user.getPassword().length() + " chars***" : "NULL"));
 
         User savedUser = userRepository.save(user);
-        System.out.println("DEBUG: Password after save: "
-                + (savedUser.getPassword() != null ? "***" + savedUser.getPassword().length() + " chars***" : "NULL"));
-
         return toDTO(savedUser);
     }
 
@@ -66,7 +54,7 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException("Invalid email or password"));
 
         // In a real app, verify hash here
-        if (!user.getPassword().equals(password)) {
+        if (user.getPassword() == null || !user.getPassword().equals(password)) {
             throw new BusinessException("Invalid email or password");
         }
 
@@ -74,31 +62,27 @@ public class UserService {
     }
 
     public UserDTO resetPassword(String email, String newPassword) {
-        System.out.println("DEBUG RESET: Email: " + email);
-        System.out.println("DEBUG RESET: New password received: "
-                + (newPassword != null ? "***" + newPassword.length() + " chars***" : "NULL"));
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException("User with email " + email + " not found"));
 
-        System.out.println("DEBUG RESET: User found: " + user.getEmail());
-        System.out.println("DEBUG RESET: Old password: "
-                + (user.getPassword() != null ? "***" + user.getPassword().length() + " chars***" : "NULL"));
-
         // In a real app, hash the password here
         user.setPassword(newPassword);
-        System.out.println("DEBUG RESET: Password after setPassword: "
-                + (user.getPassword() != null ? "***" + user.getPassword().length() + " chars***" : "NULL"));
 
         User savedUser = userRepository.save(user);
-        System.out.println("DEBUG RESET: Password after save: "
-                + (savedUser.getPassword() != null ? "***" + savedUser.getPassword().length() + " chars***" : "NULL"));
-
         return toDTO(savedUser);
     }
 
     public UserDTO updateUser(String id, UserDTO dto) {
         User user = findUserById(id);
+
+        // Check for duplicate email if email is being changed
+        if (dto.getEmail() != null && !java.util.Objects.equals(dto.getEmail(), user.getEmail())) {
+            if (userRepository.existsByEmail(dto.getEmail())) {
+                throw new BusinessException("User with email " + dto.getEmail() + " already exists");
+            }
+            user.setEmail(dto.getEmail());
+        }
+
         user.setName(dto.getName());
         user.setPhone(dto.getPhone());
         user.setAddress(dto.getAddress());

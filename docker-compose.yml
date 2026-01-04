@@ -13,13 +13,11 @@ services:
       - "${BACKEND_PORT:-8080}:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_NAME=${DB_NAME:-elibrary}
-      - DB_USER=${DB_USER:-elibrary}
-      - DB_PASSWORD=${DB_PASSWORD:-elibrary_secret}
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_DATABASE=${DB_NAME:-elibrary}
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
     networks:
       - elibrary-network
@@ -47,33 +45,28 @@ services:
       - elibrary-network
     restart: unless-stopped
 
-  # PostgreSQL Database
-  db:
-    image: postgres:16-alpine
-    container_name: elibrary-db
-    environment:
-      - POSTGRES_DB=${DB_NAME:-elibrary}
-      - POSTGRES_USER=${DB_USER:-elibrary}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-elibrary_secret}
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: elibrary-mongodb
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
+      - mongodb_data:/data/db
     networks:
       - elibrary-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-elibrary} -d ${DB_NAME:-elibrary}"]
-      interval: 5s
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 10s
+      retries: 5
+      start_period: 20s
 
 networks:
   elibrary-network:
     driver: bridge
 
 volumes:
-  postgres_data:
+  mongodb_data:
     driver: local
