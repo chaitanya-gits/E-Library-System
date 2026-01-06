@@ -28,6 +28,9 @@ jobs:
       run:
         working-directory: ./backend
 
+    env:
+      SPRING_PROFILES_ACTIVE: test
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

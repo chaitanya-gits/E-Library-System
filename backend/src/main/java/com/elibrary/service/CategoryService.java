@@ -42,14 +42,6 @@ public class CategoryService {
 
     public CategoryDTO updateCategory(String id, CategoryDTO dto) {
         Category category = findCategoryById(id);
-
-        // Check for duplicate name if name is being changed
-        if (dto.getName() != null && !java.util.Objects.equals(dto.getName(), category.getName())) {
-            if (categoryRepository.existsByName(dto.getName())) {
-                throw new BusinessException("Category with name " + dto.getName() + " already exists");
-            }
-        }
-
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
         return toDTO(categoryRepository.save(category));

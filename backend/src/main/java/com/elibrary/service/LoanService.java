@@ -98,9 +98,6 @@ public class LoanService {
 
         // Update book availability
         Book book = loan.getBook();
-        if (book == null) {
-            throw new IllegalStateException("Loan must have an associated book");
-        }
         book.setAvailableCopies(book.getAvailableCopies() + 1);
         book.setAvailable(true);
         bookRepository.save(book);
@@ -129,9 +126,6 @@ public class LoanService {
     }
 
     private LoanDTO toDTO(Loan loan) {
-        if (loan.getBook() == null || loan.getUser() == null) {
-            throw new IllegalStateException("Loan must have both book and user");
-        }
         return LoanDTO.builder()
                 .id(loan.getId())
                 .bookId(loan.getBook().getId())

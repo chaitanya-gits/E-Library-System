@@ -67,16 +67,8 @@ public class BookService {
     public BookDTO updateBook(String id, BookDTO dto) {
         Book book = findBookById(id);
 
-        // Check for duplicate ISBN if ISBN is being changed
-        if (dto.getIsbn() != null && !java.util.Objects.equals(dto.getIsbn(), book.getIsbn())) {
-            if (bookRepository.existsByIsbn(dto.getIsbn())) {
-                throw new BusinessException("Book with ISBN " + dto.getIsbn() + " already exists");
-            }
-        }
-
         book.setTitle(dto.getTitle());
         book.setAuthor(dto.getAuthor());
-        book.setIsbn(dto.getIsbn());
         book.setDescription(dto.getDescription());
         book.setPublishedYear(dto.getPublishedYear());
         book.setTotalCopies(dto.getTotalCopies());
