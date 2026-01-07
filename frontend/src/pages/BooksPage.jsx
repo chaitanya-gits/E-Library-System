@@ -272,10 +272,10 @@ function BooksPage() {
     const [books, setBooks] = useState(sampleBooks);
     const [filteredBooks, setFilteredBooks] = useState(sampleBooks);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedGenre, setSelectedGenre] = useState('All Genres');
+    const [selectedGenre] = useState('All Genres');
     const [selectedBook, setSelectedBook] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [favoriteBooks, setFavoriteBooks] = useState([]);
+
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -300,11 +300,7 @@ function BooksPage() {
         };
         fetchBooks();
 
-        // Load favorite books
-        const savedFavorites = localStorage.getItem('favoriteBooks');
-        if (savedFavorites) {
-            setFavoriteBooks(JSON.parse(savedFavorites));
-        }
+
     }, []);
 
     // Filter logic
@@ -329,22 +325,9 @@ function BooksPage() {
         e.preventDefault();
     };
 
-    const isFavorite = (bookId) => {
-        return favoriteBooks.some(b => b.id === bookId);
-    };
 
-    const toggleFavorite = (e, book) => {
-        e.stopPropagation();
-        let updatedFavorites;
-        if (isFavorite(book.id)) {
-            updatedFavorites = favoriteBooks.filter(b => b.id !== book.id);
-        } else {
-            updatedFavorites = [...favoriteBooks, book];
-        }
-        setFavoriteBooks(updatedFavorites);
-        localStorage.setItem('favoriteBooks', JSON.stringify(updatedFavorites));
-        window.dispatchEvent(new CustomEvent('booksUpdated'));
-    };
+
+
 
     if (loading) return <Loading />;
 

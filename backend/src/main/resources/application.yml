@@ -22,7 +22,7 @@ spring:
     date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
 
 server:
-  port: ${SERVER_PORT:8088}
+  port: ${PORT:8088}
 
 management:
   endpoints:

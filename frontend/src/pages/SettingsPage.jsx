@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/SettingsPage.css';
 
@@ -19,6 +19,16 @@ const SettingsPage = () => {
     // UI state
     const [saveSuccess, setSaveSuccess] = useState(false);
 
+    const getAvatarColor = (name) => {
+        const colors = ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF'];
+        if (!name) return '#E2E8F0';
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length];
+    };
+
     useEffect(() => {
         // Load user data from localStorage
         const userData = localStorage.getItem('user');
@@ -27,11 +37,12 @@ const SettingsPage = () => {
             setUser(parsedUser);
             setDisplayName(parsedUser.name || '');
             setEmail(parsedUser.email || '');
-        }
-        // Load profile image from localStorage
-        const savedImage = localStorage.getItem('profileImage');
-        if (savedImage) {
-            setProfileImage(savedImage);
+
+            if (parsedUser.profileImage) {
+                setProfileImage(parsedUser.profileImage);
+            } else {
+                setProfileImage(null);
+            }
         }
 
         // Listen for profile image updates from Sidebar
@@ -51,6 +62,7 @@ const SettingsPage = () => {
     const handleSignOut = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('profileImage'); // Clean up legacy
         navigate('/login');
     };
 
@@ -85,7 +97,12 @@ const SettingsPage = () => {
             reader.onloadend = () => {
                 const base64String = reader.result;
                 setProfileImage(base64String);
-                localStorage.setItem('profileImage', base64String);
+
+                // Update USER object
+                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                currentUser.profileImage = base64String;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                setUser(currentUser);
 
                 // Dispatch custom event to notify other components (like Sidebar)
                 window.dispatchEvent(new CustomEvent('profileImageUpdated', {
@@ -144,7 +161,10 @@ const SettingsPage = () => {
                         {profileImage ? (
                             <img src={profileImage} alt="Profile" className="avatar-image" />
                         ) : (
-                            <div className="avatar-circle">
+                            <div className="avatar-circle" style={{
+                                background: getAvatarColor(user.name),
+                                color: '#333'
+                            }}>
                                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                             </div>
                         )}

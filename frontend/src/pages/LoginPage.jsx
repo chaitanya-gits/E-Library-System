@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SignInImage from '../assets/images/SignIn_Image.jpg';
 import { userApi } from '../services/api';
@@ -258,7 +258,7 @@ const LoginPage = () => {
                             </div>
 
                             <div className="auth-redirect">
-                                Don't you have an account? <Link to="/signup" style={{ color: '#2563eb' }}>Sign up</Link>
+                                Don&apos;t you have an account? <Link to="/signup" style={{ color: '#2563eb' }}>Sign up</Link>
                             </div>
                         </>
                     )}

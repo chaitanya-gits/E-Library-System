@@ -1,0 +1,17 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  data:
+    mongodb:
+      auto-index-creation: true
+      database: test-elibrary
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 6.0.8
+
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import '../styles/SidebarDropdown.css';
 
@@ -10,14 +10,29 @@ const Sidebar = () => {
     const [profileImage, setProfileImage] = useState(null);
     const fileInputRef = useRef(null);
 
+    // Generate consistent color based on name
+    const getAvatarColor = (name) => {
+        const colors = ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF'];
+        if (!name) return '#E2E8F0';
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length];
+    };
+
     useEffect(() => {
         const userData = localStorage.getItem('user');
         if (userData) {
-            setUser(JSON.parse(userData));
-        }
-        const savedImage = localStorage.getItem('profileImage');
-        if (savedImage) {
-            setProfileImage(savedImage);
+            const parsedUser = JSON.parse(userData);
+            setUser(parsedUser);
+            // Load profile image specifically for this user
+            // We check if the user object has a profileImage property first
+            if (parsedUser.profileImage) {
+                setProfileImage(parsedUser.profileImage);
+            } else {
+                setProfileImage(null);
+            }
         }
 
         const handleProfileUpdate = (event) => {
@@ -31,6 +46,10 @@ const Sidebar = () => {
         const handleUserUpdate = (event) => {
             if (event.detail?.user) {
                 setUser(event.detail.user);
+                // Also update profile image if it exists in the updated user object
+                if (event.detail.user.profileImage) {
+                    setProfileImage(event.detail.user.profileImage);
+                }
             }
         };
 
@@ -42,7 +61,7 @@ const Sidebar = () => {
         };
     }, []);
 
-    const [isDarkMode, setIsDarkMode] = useState(() => {
+    const [isDarkMode] = useState(() => {
         const savedMode = localStorage.getItem('theme');
         return savedMode === 'dark';
     });
@@ -57,15 +76,15 @@ const Sidebar = () => {
         }
     }, [isDarkMode]);
 
-    const handleThemeToggle = (e) => {
-        e.stopPropagation();
-        setIsDarkMode(!isDarkMode);
-    };
+
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('isAuthenticated');
+        // We DO NOT remove 'profileImage' global key anymore because we aren't using it. 
+        // But for cleanup of legacy data, we can remove it.
+        localStorage.removeItem('profileImage');
         navigate('/login');
     };
 
@@ -89,7 +108,14 @@ const Sidebar = () => {
             reader.onloadend = () => {
                 const base64String = reader.result;
                 setProfileImage(base64String);
-                localStorage.setItem('profileImage', base64String);
+
+                // Update USER object in localStorage, not a global key
+                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                currentUser.profileImage = base64String;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                setUser(currentUser);
+
+                // Notify other components
                 window.dispatchEvent(new CustomEvent('profileImageUpdated', {
                     detail: { profileImage: base64String }
                 }));
@@ -220,10 +246,19 @@ const Sidebar = () => {
                         style={profileImage ? {
                             backgroundImage: `url(${profileImage})`,
                             backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                        } : {}}
+                            backgroundPosition: 'center',
+                            backgroundColor: 'transparent'
+                        } : {
+                            backgroundColor: getAvatarColor(user?.name),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#333',
+                            fontWeight: 'bold',
+                            fontSize: '16px'
+                        }}
                     >
-                        {/* Empty if no image to show clean gray circle */}
+                        {!profileImage && (user?.name ? user.name.charAt(0).toUpperCase() : 'U')}
                     </div>
                     <div className="user-profile-info">
                         <span className="user-profile-name">{user?.name || 'User'}</span>
