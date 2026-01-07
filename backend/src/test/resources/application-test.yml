@@ -11,6 +11,9 @@ de:
     mongodb:
       embedded:
         version: 6.0.8
+        platform:
+          distribution: UBUNTU
+          version: "22.04"
 
 logging:
   level:
