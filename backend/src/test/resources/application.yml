@@ -2,9 +2,3 @@ spring:
   data:
     mongodb:
       database: test-elibrary
-
-de:
-  flapdoodle:
-    mongodb:
-      embedded:
-        version: 7.0.0
