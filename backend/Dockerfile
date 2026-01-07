@@ -30,6 +30,11 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
+# Install curl for health checks
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Create a non-root user for security
 RUN groupadd -r appgroup && \
     useradd -r -g appgroup appuser
