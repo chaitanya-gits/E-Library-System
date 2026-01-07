@@ -13,7 +13,10 @@ services:
       - ./backend/src:/app/src:ro  # Mount source code (read-only)
       - ./backend/target:/app/target  # Share target directory
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_PROFILES_ACTIVE=docker
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_DATABASE=elibrary
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
       - LOGGING_LEVEL_COM_ELIBRARY=DEBUG
     ports:
@@ -36,8 +39,6 @@ services:
       - "3000:5173"
     command: npm run dev -- --host
 
-  db:
+  mongodb:
     ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_PASSWORD=elibrary_dev  # Simpler password for dev
+      - "27017:27017"
