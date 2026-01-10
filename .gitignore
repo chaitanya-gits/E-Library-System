@@ -28,3 +28,7 @@ Thumbs.db
 # Test outputs
 test-output/
 coverage/
+
+# Temporary test files
+test-*.json
+compile_log.txt

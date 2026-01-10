@@ -28,37 +28,36 @@ public class Loan {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "loan_date")
+    @Column(nullable = false)
     private LocalDate loanDate;
 
-    @Column(name = "due_date")
+    @Column(nullable = false)
     private LocalDate dueDate;
 
-    @Column(name = "return_date")
     private LocalDate returnDate;
 
-    @Builder.Default
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     @Column(nullable = false)
     private LoanStatus status = LoanStatus.ACTIVE;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 500)
     private String notes;
 
-    @Column(name = "created_at")
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate() {
+    public void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 

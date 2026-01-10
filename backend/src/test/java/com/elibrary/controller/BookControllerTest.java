@@ -35,7 +35,7 @@ class BookControllerTest {
         @BeforeEach
         void setUp() {
                 testBookDTO = BookDTO.builder()
-                                .id("book-1")
+                                .id(1L)
                                 .title("The Great Gatsby")
                                 .author("F. Scott Fitzgerald")
                                 .isbn("978-0743273565")
@@ -43,7 +43,7 @@ class BookControllerTest {
                                 .available(true)
                                 .totalCopies(3)
                                 .availableCopies(2)
-                                .categoryId("cat-1")
+                                .categoryId(1L)
                                 .categoryName("Fiction")
                                 .build();
         }
@@ -61,9 +61,9 @@ class BookControllerTest {
 
         @Test
         void getBookById_ShouldReturnBook() throws Exception {
-                when(bookService.getBookById("book-1")).thenReturn(testBookDTO);
+                when(bookService.getBookById(1L)).thenReturn(testBookDTO);
 
-                mockMvc.perform(get("/api/books/book-1"))
+                mockMvc.perform(get("/api/books/1"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.title").value("The Great Gatsby"))
                                 .andExpect(jsonPath("$.categoryName").value("Fiction"));
@@ -77,7 +77,7 @@ class BookControllerTest {
                                 .build();
 
                 BookDTO savedDTO = BookDTO.builder()
-                                .id("book-2")
+                                .id(2L)
                                 .title("New Book")
                                 .author("Test Author")
                                 .available(true)
@@ -89,7 +89,7 @@ class BookControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(Objects.requireNonNull(objectMapper.writeValueAsString(inputDTO))))
                                 .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.id").value("book-2"))
+                                .andExpect(jsonPath("$.id").value(2))
                                 .andExpect(jsonPath("$.title").value("New Book"));
         }
 

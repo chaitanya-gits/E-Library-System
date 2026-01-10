@@ -18,6 +18,8 @@ const SettingsPage = () => {
 
     // UI state
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [saveError, setSaveError] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
     const getAvatarColor = (name) => {
         const colors = ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF'];
@@ -69,8 +71,44 @@ const SettingsPage = () => {
     const handleSaveChanges = async (e) => {
         e.preventDefault();
 
-        if (user) {
-            const updatedUser = { ...user, name: displayName, email };
+        if (!user || !user.id) {
+            setSaveError('User information is missing. Please log in again.');
+            return;
+        }
+
+        setIsSaving(true);
+        setSaveError('');
+        setSaveSuccess(false);
+
+        try {
+            // Call the backend API to update user profile
+            const response = await fetch(`http://localhost:8088/api/users/${user.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: displayName,
+                    email: email,
+                    phone: user.phone,
+                    address: user.address,
+                    active: user.active
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update profile');
+            }
+
+            const updatedUserData = await response.json();
+
+            // Update localStorage with the response from backend
+            const updatedUser = {
+                ...user,
+                name: updatedUserData.name,
+                email: updatedUserData.email
+            };
             localStorage.setItem('user', JSON.stringify(updatedUser));
             setUser(updatedUser);
 
@@ -81,6 +119,12 @@ const SettingsPage = () => {
             window.dispatchEvent(new CustomEvent('userUpdated', {
                 detail: { user: updatedUser }
             }));
+        } catch (error) {
+            console.error('Error updating user:', error);
+            setSaveError(error.message || 'Failed to save changes. Please try again.');
+            setTimeout(() => setSaveError(''), 5000);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -287,8 +331,14 @@ const SettingsPage = () => {
                             </div>
                         )}
 
-                        <button type="submit" className="btn-save-changes">
-                            Save Changes
+                        {saveError && (
+                            <div className="save-error">
+                                ✗ {saveError}
+                            </div>
+                        )}
+
+                        <button type="submit" className="btn-save-changes" disabled={isSaving}>
+                            {isSaving ? 'Saving...' : 'Save Changes'}
                         </button>
                     </form>
                 </div>

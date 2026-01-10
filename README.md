@@ -155,8 +155,3 @@ The GitHub Actions workflow runs on every push:
 ## License
 
 MIT License
-=======
-# library Management System 
-The Problem Statement is Library Management System are used to store books, but require a system to navigate to a specific book or specific content within a book. A library database system is an infrastructure that allows users to search books and book content, add/remove, and download selected books.
-
->>>>>>> d47e8150c9e7abfab9cd292383bbb59d9ae38c79

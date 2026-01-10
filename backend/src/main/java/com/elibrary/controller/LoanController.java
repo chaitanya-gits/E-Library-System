@@ -22,12 +22,12 @@ public class LoanController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LoanDTO> getLoanById(@PathVariable String id) {
+    public ResponseEntity<LoanDTO> getLoanById(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.getLoanById(id));
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<LoanDTO>> getLoansByUser(@PathVariable String userId) {
+    public ResponseEntity<List<LoanDTO>> getLoansByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(loanService.getLoansByUser(userId));
     }
 
@@ -43,20 +43,20 @@ public class LoanController {
 
     @PostMapping("/checkout")
     public ResponseEntity<LoanDTO> checkoutBook(
-            @RequestParam String bookId,
-            @RequestParam String userId) {
+            @RequestParam Long bookId,
+            @RequestParam Long userId) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(loanService.checkoutBook(bookId, userId));
     }
 
     @PostMapping("/{id}/return")
-    public ResponseEntity<LoanDTO> returnBook(@PathVariable String id) {
+    public ResponseEntity<LoanDTO> returnBook(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.returnBook(id));
     }
 
     @PostMapping("/{id}/extend")
     public ResponseEntity<LoanDTO> extendLoan(
-            @PathVariable String id,
+            @PathVariable Long id,
             @RequestParam(defaultValue = "7") int days) {
         return ResponseEntity.ok(loanService.extendLoan(id, days));
     }

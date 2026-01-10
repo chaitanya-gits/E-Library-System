@@ -25,7 +25,7 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
-    public CategoryDTO getCategoryById(String id) {
+    public CategoryDTO getCategoryById(Long id) {
         return toDTO(findCategoryById(id));
     }
 
@@ -40,28 +40,28 @@ public class CategoryService {
         return toDTO(categoryRepository.save(category));
     }
 
-    public CategoryDTO updateCategory(String id, CategoryDTO dto) {
+    public CategoryDTO updateCategory(Long id, CategoryDTO dto) {
         Category category = findCategoryById(id);
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
         return toDTO(categoryRepository.save(category));
     }
 
-    public void deleteCategory(String id) {
+    public void deleteCategory(Long id) {
         Category category = findCategoryById(id);
-        if (!bookRepository.findByCategory_Id(id).isEmpty()) {
+        if (!bookRepository.findByCategoryId(id).isEmpty()) {
             throw new BusinessException("Cannot delete category with existing books");
         }
         categoryRepository.delete(category);
     }
 
-    private Category findCategoryById(String id) {
+    private Category findCategoryById(Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
     }
 
     private CategoryDTO toDTO(Category category) {
-        int bookCount = bookRepository.findByCategory_Id(category.getId()).size();
+        int bookCount = bookRepository.findByCategoryId(category.getId()).size();
         return CategoryDTO.builder()
                 .id(category.getId())
                 .name(category.getName())

@@ -30,12 +30,12 @@ public class LoanService {
                 .collect(Collectors.toList());
     }
 
-    public LoanDTO getLoanById(String id) {
+    public LoanDTO getLoanById(Long id) {
         return toDTO(findLoanById(id));
     }
 
-    public List<LoanDTO> getLoansByUser(String userId) {
-        return loanRepository.findByUser_Id(userId).stream()
+    public List<LoanDTO> getLoansByUser(Long userId) {
+        return loanRepository.findByUserId(userId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -52,7 +52,7 @@ public class LoanService {
                 .collect(Collectors.toList());
     }
 
-    public LoanDTO checkoutBook(String bookId, String userId) {
+    public LoanDTO checkoutBook(Long bookId, Long userId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
 
@@ -67,7 +67,7 @@ public class LoanService {
             throw new BusinessException("No copies available for checkout");
         }
 
-        long activeLoans = loanRepository.countByUser_IdAndStatus(userId, Loan.LoanStatus.ACTIVE);
+        long activeLoans = loanRepository.countByUserIdAndStatus(userId, Loan.LoanStatus.ACTIVE);
         if (activeLoans >= MAX_LOANS_PER_USER) {
             throw new BusinessException("User has reached maximum loan limit of " + MAX_LOANS_PER_USER);
         }
@@ -89,7 +89,7 @@ public class LoanService {
         return toDTO(loanRepository.save(loan));
     }
 
-    public LoanDTO returnBook(String loanId) {
+    public LoanDTO returnBook(Long loanId) {
         Loan loan = findLoanById(loanId);
 
         if (loan.getStatus() == Loan.LoanStatus.RETURNED) {
@@ -109,7 +109,7 @@ public class LoanService {
         return toDTO(loanRepository.save(loan));
     }
 
-    public LoanDTO extendLoan(String loanId, int days) {
+    public LoanDTO extendLoan(Long loanId, int days) {
         Loan loan = findLoanById(loanId);
 
         if (loan.getStatus() != Loan.LoanStatus.ACTIVE) {
@@ -120,7 +120,7 @@ public class LoanService {
         return toDTO(loanRepository.save(loan));
     }
 
-    private Loan findLoanById(String id) {
+    private Loan findLoanById(Long id) {
         return loanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + id));
     }

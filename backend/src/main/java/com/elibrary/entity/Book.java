@@ -31,7 +31,7 @@ public class Book {
     @Column(unique = true)
     private String isbn;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 1000)
     private String description;
 
     @Min(value = 1000, message = "Published year must be valid")
@@ -56,20 +56,20 @@ public class Book {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(name = "created_at")
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate() {
+    public void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 }

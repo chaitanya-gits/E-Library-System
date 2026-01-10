@@ -27,7 +27,7 @@ public class BookService {
                 .collect(Collectors.toList());
     }
 
-    public BookDTO getBookById(String id) {
+    public BookDTO getBookById(Long id) {
         return toDTO(findBookById(id));
     }
 
@@ -38,13 +38,13 @@ public class BookService {
     }
 
     public List<BookDTO> getAvailableBooks() {
-        return bookRepository.findAvailableBooks().stream()
+        return bookRepository.findByAvailableCopiesGreaterThan(0).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<BookDTO> getBooksByCategory(String categoryId) {
-        return bookRepository.findByCategory_Id(categoryId).stream()
+    public List<BookDTO> getBooksByCategory(Long categoryId) {
+        return bookRepository.findByCategoryId(categoryId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -64,7 +64,7 @@ public class BookService {
         return toDTO(bookRepository.save(book));
     }
 
-    public BookDTO updateBook(String id, BookDTO dto) {
+    public BookDTO updateBook(Long id, BookDTO dto) {
         Book book = findBookById(id);
 
         book.setTitle(dto.getTitle());
@@ -83,12 +83,12 @@ public class BookService {
         return toDTO(bookRepository.save(book));
     }
 
-    public void deleteBook(String id) {
+    public void deleteBook(Long id) {
         Book book = findBookById(id);
         bookRepository.delete(book);
     }
 
-    private Book findBookById(String id) {
+    private Book findBookById(Long id) {
         return bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
     }

@@ -3,9 +3,9 @@ spring:
     name: e-library-system
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:elibrary}
-    username: ${DB_USER:elibrary}
-    password: ${DB_PASSWORD:elibrary}
+    url: jdbc:postgresql://db.ynykusfuerewikqnpbrz.supabase.co:5432/postgres
+    username: postgres
+    password: 6281406276!@
     driver-class-name: org.postgresql.Driver
 
   jpa:

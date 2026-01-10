@@ -37,12 +37,12 @@ class BookServiceTest {
     @BeforeEach
     void setUp() {
         testCategory = Category.builder()
-                .id("cat-1")
+                .id(1L)
                 .name("Fiction")
                 .build();
 
         testBook = Book.builder()
-                .id("book-1")
+                .id(1L)
                 .title("The Great Gatsby")
                 .author("F. Scott Fitzgerald")
                 .isbn("978-0743273565")
@@ -67,9 +67,9 @@ class BookServiceTest {
 
     @Test
     void getBookById_WhenExists_ShouldReturnBook() {
-        when(bookRepository.findById("book-1")).thenReturn(Optional.of(testBook));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(testBook));
 
-        BookDTO result = bookService.getBookById("book-1");
+        BookDTO result = bookService.getBookById(1L);
 
         assertNotNull(result);
         assertEquals("The Great Gatsby", result.getTitle());
@@ -78,10 +78,10 @@ class BookServiceTest {
 
     @Test
     void getBookById_WhenNotExists_ShouldThrowException() {
-        when(bookRepository.findById("99")).thenReturn(Optional.empty());
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            bookService.getBookById("99");
+            bookService.getBookById(99L);
         });
     }
 
@@ -94,7 +94,7 @@ class BookServiceTest {
                 .build();
 
         Book savedBook = Book.builder()
-                .id("book-2")
+                .id(2L)
                 .title("New Book")
                 .author("Test Author")
                 .isbn("123-456")
@@ -126,10 +126,10 @@ class BookServiceTest {
 
     @Test
     void deleteBook_WhenExists_ShouldDeleteSuccessfully() {
-        when(bookRepository.findById("book-1")).thenReturn(Optional.of(testBook));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(testBook));
         doNothing().when(bookRepository).delete(testBook);
 
-        assertDoesNotThrow(() -> bookService.deleteBook("book-1"));
+        assertDoesNotThrow(() -> bookService.deleteBook(1L));
         verify(bookRepository, times(1)).delete(testBook);
     }
 }

@@ -34,24 +34,23 @@ public class User {
 
     private String phone;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 500)
     private String address;
 
-    @Column(name = "membership_date")
     private LocalDate membershipDate;
 
     @Builder.Default
     @Column(nullable = false)
     private Boolean active = true;
 
-    @Column(name = "created_at")
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (membershipDate == null) {
@@ -60,7 +59,7 @@ public class User {
     }
 
     @PreUpdate
-    protected void onUpdate() {
+    public void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 }
