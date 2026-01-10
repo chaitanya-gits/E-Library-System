@@ -13,11 +13,13 @@ services:
       - "${BACKEND_PORT:-8080}:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MONGODB_HOST=mongodb
-      - MONGODB_PORT=27017
-      - MONGODB_DATABASE=${DB_NAME:-elibrary}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-elibrary}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
     depends_on:
-      mongodb:
+      postgres:
         condition: service_healthy
     networks:
       - elibrary-network
@@ -45,28 +47,32 @@ services:
       - elibrary-network
     restart: unless-stopped
 
-  # MongoDB Database
-  mongodb:
-    image: mongo:6.0
-    container_name: elibrary-mongodb
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: elibrary-postgres
     ports:
-      - "27017:27017"
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME:-elibrary}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
     volumes:
-      - mongodb_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - elibrary-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 10s
 
 networks:
   elibrary-network:
     driver: bridge
 
 volumes:
-  mongodb_data:
+  postgres_data:
     driver: local
