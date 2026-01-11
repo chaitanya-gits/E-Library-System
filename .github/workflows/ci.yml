@@ -157,6 +157,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: [docker-build]
 
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: elibrary
+          POSTGRES_USER: elibrary
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -164,7 +179,11 @@ jobs:
       - name: Create .env file
         run: |
           cat > .env << EOF
+          DB_HOST=postgres
+          DB_PORT=5432
           DB_NAME=elibrary
+          DB_USER=elibrary
+          DB_PASSWORD=test_password
           BACKEND_PORT=8080
           EOF
 
