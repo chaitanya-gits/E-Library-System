@@ -6,7 +6,7 @@ A containerized library management system built with **Spring Boot** (backend) a
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-green)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Docker](https://img.shields.io/badge/Docker-Compose-blue)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=Black)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=black)
 
 ---
 
