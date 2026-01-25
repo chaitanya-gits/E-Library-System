@@ -215,31 +215,46 @@ jobs:
           BACKEND_PORT=8080
           EOF
 
-      - name: Start containers
-        run: docker compose up -d
+      - name: Download backend JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: ./backend/target
 
-      - name: Inspect backend configuration
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+
+      - name: Start Backend Application
         run: |
-          echo "=== Backend container environment ===" 
-          docker compose exec -T backend env | grep -E "(DB_|SPRING)" || true
-          echo ""
-          echo "=== Initial backend logs ==="
-          docker compose logs backend | tail -50
+          cd backend
+          java -jar target/*.jar &
+          BACKEND_PID=$!
+          echo $BACKEND_PID > backend.pid
+          echo "Started backend with PID $BACKEND_PID"
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/elibrary
+          SPRING_DATASOURCE_USERNAME: elibrary_user
+          SPRING_DATASOURCE_PASSWORD: elibrary_pass
 
       - name: Wait for backend to be healthy
         run: |
           echo "Waiting for backend to be ready..."
-          # Max 30 attempts, 5 seconds apart
           for i in {1..30}; do
-            if curl -f http://localhost:8080/actuator/health | grep -q "UP"; then
+            if curl -f http://localhost:8080/actuator/health 2>/dev/null | grep -q "UP"; then
               echo "✅ Backend is healthy!"
               exit 0
             fi
             echo "⏳ Waiting for backend... ($i/30)"
             sleep 5
           done
-          echo "❌ Backend failed to become healthy in time"
-          docker compose logs backend
+          echo "❌ Backend failed to become healthy"
+          if [ -f backend/backend.pid ]; then
+            kill $(cat backend/backend.pid) || true
+          fi
           exit 1
 
       - name: Run API smoke tests
@@ -250,17 +265,10 @@ jobs:
           curl -f http://localhost:8080/api/categories || exit 1
           echo "✅ API smoke tests passed!"
 
-      - name: Collect Docker logs
-        if: failure()
-        run: docker compose logs > docker-logs.txt
-
-      - name: Upload Docker logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-logs
-          path: docker-logs.txt
-
-      - name: Stop containers
+      - name: Stop backend
         if: always()
-        run: docker compose down -v
+        run: |
+          if [ -f backend/backend.pid ]; then
+            kill $(cat backend/backend.pid) || true
+            rm backend/backend.pid
+          fi
