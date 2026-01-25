@@ -230,10 +230,20 @@ jobs:
       - name: Start Backend Application
         run: |
           cd backend
-          java -jar target/*.jar &
-          BACKEND_PID=$!
-          echo $BACKEND_PID > backend.pid
-          echo "Started backend with PID $BACKEND_PID"
+          nohup java -jar target/*.jar > ../backend.log 2>&1 &
+          echo $! > backend.pid
+          echo "Started backend with PID $(cat backend.pid)"
+          sleep 10  # Initial startup grace period
+
+          # Verify process is still running
+          if ps -p $(cat backend.pid) > /dev/null; then
+            echo "✅ Backend process is running"
+          else
+            echo "❌ Backend process died immediately"
+            echo "=== Backend Logs ==="
+            cat ../backend.log
+            exit 1
+          fi
         env:
           SPRING_PROFILES_ACTIVE: test
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/elibrary
@@ -243,18 +253,30 @@ jobs:
       - name: Wait for backend to be healthy
         run: |
           echo "Waiting for backend to be ready..."
-          for i in {1..30}; do
-            if curl -f http://localhost:8080/actuator/health 2>/dev/null | grep -q "UP"; then
+          for i in {1..60}; do
+            response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health 2>/dev/null || echo "000")
+            
+            if [ "$response" = "200" ]; then
               echo "✅ Backend is healthy!"
               exit 0
             fi
-            echo "⏳ Waiting for backend... ($i/30)"
+            
+            echo "⏳ Waiting for backend... ($i/60) [HTTP $response]"
+            
+            # Check if process is still running
+            if [ -f backend/backend.pid ] && ! ps -p $(cat backend/backend.pid) > /dev/null 2>&1; then
+              echo "❌ Backend process died!"
+              echo "=== Backend Logs ==="
+              tail -100 backend.log
+              exit 1
+            fi
+            
             sleep 5
           done
-          echo "❌ Backend failed to become healthy"
-          if [ -f backend/backend.pid ]; then
-            kill $(cat backend/backend.pid) || true
-          fi
+
+          echo "❌ Backend failed to become healthy after 5 minutes"
+          echo "=== Backend Logs (last 200 lines) ==="
+          tail -200 backend.log
           exit 1
 
       - name: Run API smoke tests
