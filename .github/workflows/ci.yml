@@ -136,8 +136,7 @@ jobs:
           file: ./backend/Dockerfile
           push: false
           tags: elibrary-backend:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
 
       - name: Build Frontend Docker Image
         uses: docker/build-push-action@v5
