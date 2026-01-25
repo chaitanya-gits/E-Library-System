@@ -24,12 +24,30 @@ jobs:
     name: Backend Build & Test
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: elibrary_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U test_user -d elibrary_test"
+          --health-interval=5s
+          --health-timeout=2s
+          --health-retries=10
+
     defaults:
       run:
         working-directory: ./backend
 
     env:
       SPRING_PROFILES_ACTIVE: test
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/elibrary_test
+      SPRING_DATASOURCE_USERNAME: test_user
+      SPRING_DATASOURCE_PASSWORD: test_pass
 
     steps:
       - name: Checkout code
