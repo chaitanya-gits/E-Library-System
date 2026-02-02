@@ -237,6 +237,7 @@ integration-test:
     POSTGRES_DB: elibrary
     POSTGRES_USER: elibrary_user
     POSTGRES_PASSWORD: elibrary_pass
+    PORT: 8088
     SPRING_PROFILES_ACTIVE: test
     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/elibrary
     SPRING_DATASOURCE_USERNAME: elibrary_user
@@ -254,39 +255,55 @@ integration-test:
         sleep 2
       done
     - echo "✅ PostgreSQL is ready!"
+    # Verify database connectivity
+    - echo "Testing database connection..."
+    - PGPASSWORD=$POSTGRES_PASSWORD psql -h postgres -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT version();"
+    - echo "✅ Database connection verified!"
+
     - echo "Starting backend application..."
     - cd backend
+    - echo "Environment variables:"
+    - echo "PORT=$PORT"
+    - echo "SPRING_DATASOURCE_URL=$SPRING_DATASOURCE_URL"
     - nohup java -jar target/*.jar > ../backend.log 2>&1 &
     - echo $! > backend.pid
     - echo "Started backend with PID $(cat backend.pid)"
-    - sleep 10
+    - cd ..
+    - sleep 15
 
     - |
-      if ps -p $(cat backend.pid) > /dev/null; then
+      if ps -p $(cat backend/backend.pid) > /dev/null; then
         echo "✅ Backend process is running"
       else
         echo "❌ Backend process died immediately"
         echo "=== Backend Logs ==="
-        cat ../backend.log
+        cat backend.log
         exit 1
       fi
 
     - echo "Waiting for backend to be healthy..."
     - |
-      for i in {1..60}; do
-        response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health 2>/dev/null || echo "000")
+      for i in {1..30}; do
+        response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8088/actuator/health 2>/dev/null || echo "000")
         
         if [ "$response" = "200" ]; then
           echo "✅ Backend is healthy!"
           break
         fi
         
-        echo "⏳ Waiting for backend... ($i/60) [HTTP $response]"
+        echo "⏳ Waiting for backend... ($i/30) [HTTP $response]"
         
-        if [ -f backend.pid ] && ! ps -p $(cat backend.pid) > /dev/null 2>&1; then
+        if [ -f backend/backend.pid ] && ! ps -p $(cat backend/backend.pid) > /dev/null 2>&1; then
           echo "❌ Backend process died!"
           echo "=== Backend Logs ==="
-          tail -100 ../backend.log
+          cat backend.log
+          exit 1
+        fi
+        
+        if [ $i -eq 30 ]; then
+          echo "❌ Backend health check timeout!"
+          echo "=== Last 50 lines of Backend Logs ==="
+          tail -50 backend.log
           exit 1
         fi
         
@@ -294,9 +311,9 @@ integration-test:
       done
 
     - echo "Testing API endpoints..."
-    - curl -f http://localhost:8080/api/books || exit 1
-    - curl -f http://localhost:8080/api/users || exit 1
-    - curl -f http://localhost:8080/api/categories || exit 1
+    - curl -f http://localhost:8088/api/books || exit 1
+    - curl -f http://localhost:8088/api/users || exit 1
+    - curl -f http://localhost:8088/api/categories || exit 1
     - echo "✅ API smoke tests passed!"
 
   after_script:
