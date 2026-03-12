@@ -36,7 +36,15 @@ Set these on the Railway backend service:
 
 Database variables:
 
-- If you attach a Railway Postgres service, Railway commonly provides `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD`
+- Railway Postgres exposes `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, and `DATABASE_URL`
+- Railway service variables are not assumed automatically across services; create reference variables on the backend service
+- Recommended backend variable:
+
+```text
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+```
+
+- If your database service has a different name, replace `Postgres` with that exact Railway service name
 - You can also set `DB_URL`, `DB_USER`, and `DB_PASSWORD` manually if you prefer
 
 Health check path:
@@ -79,12 +87,13 @@ Notes:
 ## Redeploy Checklist
 
 1. Attach PostgreSQL or configure external database variables
-2. Set `SPRING_PROFILES_ACTIVE=docker`
-3. Set `FRONTEND_APP_URL` to the frontend Railway URL
-4. Set `APP_CORS_ALLOWED_ORIGINS` to the frontend Railway URL
-5. Set frontend `VITE_API_URL`, `VITE_AUTH_BASE_URL`, and `BACKEND_UPSTREAM` to the backend Railway URL
-6. Redeploy backend
-7. Redeploy frontend
+2. In backend service variables, add `DATABASE_URL=${{Postgres.DATABASE_URL}}` or reference the actual DB service name
+3. Set `SPRING_PROFILES_ACTIVE=docker`
+4. Set `FRONTEND_APP_URL` to the frontend Railway URL
+5. Set `APP_CORS_ALLOWED_ORIGINS` to the frontend Railway URL
+6. Set frontend `VITE_API_URL`, `VITE_AUTH_BASE_URL`, and `BACKEND_UPSTREAM` to the backend Railway URL
+7. Redeploy backend
+8. Redeploy frontend
 
 ## Quick Verification
 

@@ -3,7 +3,7 @@ spring:
     name: e-library-system
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://${DB_HOST:${PGHOST:localhost}}:${DB_PORT:${PGPORT:5432}}/${DB_NAME:${PGDATABASE:elibrary}}?sslmode=${DB_SSL_MODE:${PGSSLMODE:require}}}
+    url: ${DB_URL:${DATABASE_URL:jdbc:postgresql://${DB_HOST:${PGHOST:localhost}}:${DB_PORT:${PGPORT:5432}}/${DB_NAME:${PGDATABASE:elibrary}}?sslmode=${DB_SSL_MODE:${PGSSLMODE:require}}}}
     username: ${DB_USER:${PGUSER:elibrary}}
     password: ${DB_PASSWORD:${PGPASSWORD:elibrary_secret}}
     driver-class-name: org.postgresql.Driver
