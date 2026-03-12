@@ -1,22 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { usePageTransition } from '../components/pageTransitionContext';
 import '../styles/SettingsPage.css';
+import { userApi } from '../services/api';
 
 const SettingsPage = () => {
-    const navigate = useNavigate();
+    const { navigateWithTransition } = usePageTransition();
     const [user, setUser] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
     const fileInputRef = useRef(null);
 
-    // Form state
     const [displayName, setDisplayName] = useState('');
     const [email, setEmail] = useState('');
 
-    // Appearance state
     const [darkMode, setDarkMode] = useState(false);
     const [compactView, setCompactView] = useState(false);
 
-    // UI state
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [saveError, setSaveError] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -32,22 +30,15 @@ const SettingsPage = () => {
     };
 
     useEffect(() => {
-        // Load user data from localStorage
         const userData = localStorage.getItem('user');
         if (userData) {
             const parsedUser = JSON.parse(userData);
             setUser(parsedUser);
             setDisplayName(parsedUser.name || '');
             setEmail(parsedUser.email || '');
-
-            if (parsedUser.profileImage) {
-                setProfileImage(parsedUser.profileImage);
-            } else {
-                setProfileImage(null);
-            }
+            setProfileImage(parsedUser.profileImage || null);
         }
 
-        // Listen for profile image updates from Sidebar
         const handleProfileUpdate = (event) => {
             if (event.detail?.profileImage) {
                 setProfileImage(event.detail.profileImage);
@@ -64,8 +55,8 @@ const SettingsPage = () => {
     const handleSignOut = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('profileImage'); // Clean up legacy
-        navigate('/login');
+        localStorage.removeItem('profileImage');
+        navigateWithTransition('/login', {}, 'Signing you out...');
     };
 
     const handleSaveChanges = async (e) => {
@@ -81,59 +72,42 @@ const SettingsPage = () => {
         setSaveSuccess(false);
 
         try {
-            // Call the backend API to update user profile
-            const response = await fetch(`http://localhost:8088/api/users/${user.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: displayName,
-                    email: email,
-                    phone: user.phone,
-                    address: user.address,
-                    active: user.active
-                }),
+            const response = await userApi.update(user.id, {
+                name: displayName,
+                email,
+                phone: user.phone,
+                address: user.address,
+                active: user.active,
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to update profile');
-            }
-
-            const updatedUserData = await response.json();
-
-            // Update localStorage with the response from backend
+            const updatedUserData = response.data;
             const updatedUser = {
                 ...user,
                 name: updatedUserData.name,
-                email: updatedUserData.email
+                email: updatedUserData.email,
             };
+
             localStorage.setItem('user', JSON.stringify(updatedUser));
             setUser(updatedUser);
-
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
 
-            // Dispatch event to update Sidebar
             window.dispatchEvent(new CustomEvent('userUpdated', {
-                detail: { user: updatedUser }
+                detail: { user: updatedUser },
             }));
         } catch (error) {
             console.error('Error updating user:', error);
-            setSaveError(error.message || 'Failed to save changes. Please try again.');
+            setSaveError(error.response?.data?.message || 'Failed to save changes. Please try again.');
             setTimeout(() => setSaveError(''), 5000);
         } finally {
             setIsSaving(false);
         }
     };
 
-    // Handle double-click on avatar to upload profile picture
     const handleAvatarDoubleClick = () => {
         fileInputRef.current?.click();
     };
 
-    // Handle file selection and dispatch event to sync with Sidebar
     const handleFileChange = (event) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -142,29 +116,25 @@ const SettingsPage = () => {
                 const base64String = reader.result;
                 setProfileImage(base64String);
 
-                // Update USER object
                 const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
                 currentUser.profileImage = base64String;
                 localStorage.setItem('user', JSON.stringify(currentUser));
                 setUser(currentUser);
 
-                // Dispatch custom event to notify other components (like Sidebar)
                 window.dispatchEvent(new CustomEvent('profileImageUpdated', {
-                    detail: { profileImage: base64String }
+                    detail: { profileImage: base64String },
                 }));
             };
             reader.readAsDataURL(file);
         }
     };
 
-    // Format membership date
     const formatMembershipDate = (dateString) => {
         if (!dateString) return '2023';
         const date = new Date(dateString);
         return date.getFullYear();
     };
 
-    // Get current date for header
     const getCurrentDate = () => {
         const options = { weekday: 'long', month: 'short', day: 'numeric' };
         return new Date().toLocaleDateString('en-US', options);
@@ -180,7 +150,6 @@ const SettingsPage = () => {
 
     return (
         <div className="settings-page">
-            {/* Hidden file input for profile picture upload */}
             <input
                 type="file"
                 ref={fileInputRef}
@@ -194,7 +163,6 @@ const SettingsPage = () => {
                 <p className="settings-date">{getCurrentDate()}</p>
             </div>
 
-            {/* Profile Card */}
             <div className="profile-card">
                 <div className="profile-info">
                     <div
@@ -205,10 +173,13 @@ const SettingsPage = () => {
                         {profileImage ? (
                             <img src={profileImage} alt="Profile" className="avatar-image" />
                         ) : (
-                            <div className="avatar-circle" style={{
-                                background: getAvatarColor(user.name),
-                                color: '#333'
-                            }}>
+                            <div
+                                className="avatar-circle"
+                                style={{
+                                    background: getAvatarColor(user.name),
+                                    color: '#333',
+                                }}
+                            >
                                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                             </div>
                         )}
@@ -229,7 +200,6 @@ const SettingsPage = () => {
                         <p className="profile-role">
                             Library Member • Member since {formatMembershipDate(user.membershipDate)}
                         </p>
-
                     </div>
                 </div>
 
@@ -238,9 +208,7 @@ const SettingsPage = () => {
                 </button>
             </div>
 
-            {/* Settings Grid */}
             <div className="settings-grid">
-                {/* Appearance Section */}
                 <div className="settings-section">
                     <div className="section-header">
                         <div className="section-icon appearance-icon">
@@ -290,7 +258,6 @@ const SettingsPage = () => {
                     </div>
                 </div>
 
-                {/* Account Details Section */}
                 <div className="settings-section">
                     <div className="section-header">
                         <div className="section-icon account-icon">

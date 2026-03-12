@@ -1,21 +1,26 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+/* eslint-env node */
+import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
-export default defineConfig({
-    plugins: [react()],
-    server: {
-        host: true,
-        port: 5173,
-        proxy: {
-            '/api': {
-                target: 'http://localhost:8088',
-                changeOrigin: true
-            }
-        }
-    },
-    build: {
-        outDir: 'dist',
-        sourcemap: false
-    }
-})
+export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, process.cwd(), '');
+    const proxyTarget = env.VITE_BACKEND_PROXY_TARGET || 'http://localhost:8080';
+
+    return {
+        plugins: [react()],
+        server: {
+            host: true,
+            port: 5173,
+            proxy: {
+                '/api': {
+                    target: proxyTarget,
+                    changeOrigin: true,
+                },
+            },
+        },
+        build: {
+            outDir: 'dist',
+            sourcemap: false,
+        },
+    };
+});

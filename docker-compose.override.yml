@@ -1,29 +1,29 @@
 # ================================
 # Docker Compose Override for Development
 # ================================
-# This file automatically merges with docker-compose.yml 
-# when running `docker compose up`
 
 services:
   backend:
     build:
       context: ./backend
-      target: builder  # Use builder stage for faster rebuilds
+      target: builder
     volumes:
-      - ./backend/src:/app/src:ro  # Mount source code (read-only)
-      - ./backend/target:/app/target  # Share target directory
+      - ./backend/src:/app/src
+      - ./backend/target:/app/target
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - SPRING_DEVTOOLS_RESTART_ENABLED=true
-      - LOGGING_LEVEL_COM_ELIBRARY=DEBUG
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      FRONTEND_APP_URL: ${FRONTEND_APP_URL:-http://localhost:3000}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      SPRING_DEVTOOLS_RESTART_ENABLED: true
+      LOGGING_LEVEL_COM_ELIBRARY: DEBUG
     ports:
-      - "8090:8080"
-      - "5005:5005"  # Debug port
+      - "8080:8080"
+      - "5005:5005"
     command: >
       ./mvnw spring-boot:run
       -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
@@ -33,10 +33,12 @@ services:
       context: ./frontend
       target: development
     volumes:
-      - ./frontend/src:/app/src:ro
-      - ./frontend/public:/app/public:ro
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
     environment:
-      - VITE_API_URL=http://localhost:8090/api
+      VITE_API_URL: /api
+      VITE_BACKEND_PROXY_TARGET: http://backend:8080
+      VITE_AUTH_BASE_URL: http://localhost:8080
     ports:
       - "3000:5173"
     command: npm run dev -- --host

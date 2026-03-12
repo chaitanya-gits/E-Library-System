@@ -11,7 +11,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/loans")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class LoanController {
 
     private final LoanService loanService;
@@ -61,3 +60,4 @@ public class LoanController {
         return ResponseEntity.ok(loanService.extendLoan(id, days));
     }
 }
+

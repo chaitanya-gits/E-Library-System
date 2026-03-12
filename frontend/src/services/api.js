@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8088/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -9,7 +9,6 @@ const api = axios.create({
     },
 });
 
-// Books API
 export const bookApi = {
     getAll: () => api.get('/books'),
     getById: (id) => api.get(`/books/${id}`),
@@ -21,7 +20,6 @@ export const bookApi = {
     delete: (id) => api.delete(`/books/${id}`),
 };
 
-// Users API
 export const userApi = {
     getAll: () => api.get('/users'),
     getById: (id) => api.get(`/users/${id}`),
@@ -29,13 +27,10 @@ export const userApi = {
     create: (user) => api.post('/users', user),
     update: (id, user) => api.put(`/users/${id}`, user),
     delete: (id) => api.delete(`/users/${id}`),
-    // Auth endpoints
     login: (email, password) => api.post('/users/login', { email, password }),
     resetPassword: (email, newPassword) => api.post('/users/reset-password', { email, password: newPassword }),
 };
 
-
-// Loans API
 export const loanApi = {
     getAll: () => api.get('/loans'),
     getById: (id) => api.get(`/loans/${id}`),
@@ -47,7 +42,6 @@ export const loanApi = {
     extend: (id, days) => api.post(`/loans/${id}/extend?days=${days}`),
 };
 
-// Categories API
 export const categoryApi = {
     getAll: () => api.get('/categories'),
     getById: (id) => api.get(`/categories/${id}`),

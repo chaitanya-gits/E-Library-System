@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import GoogleLogo from '../assets/images/google-logo.svg';
 import SignInImage from '../assets/images/SignIn_Image.jpg';
+import { usePageTransition } from '../components/pageTransitionContext';
 import { userApi } from '../services/api';
+import { startGoogleLogin } from '../services/socialAuth';
+import { PASSWORD_REGEX, PASSWORD_RULE_MESSAGE } from '../utils/auth';
 
-// Helper for password input field with toggle
 const PasswordInput = ({ id, value, onChange, placeholder, show, onToggle, label }) => (
     <div className="form-group">
         <label htmlFor={id}>{label}</label>
         <div style={{ position: 'relative' }}>
             <input
-                type={show ? "text" : "password"}
+                type={show ? 'text' : 'password'}
                 id={id}
                 placeholder={placeholder}
                 value={value}
@@ -45,31 +48,23 @@ const PasswordInput = ({ id, value, onChange, placeholder, show, onToggle, label
 );
 
 const SignUpPage = () => {
-    const navigate = useNavigate();
-
-    // Form State
+    const { beginTransition, navigateWithTransition } = usePageTransition();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-
-    // UI State
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Validation Regex: 8 chars, at least one symbol
-    const passwordRegex = /^(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
-
-    const handleSignUp = async (e) => {
-        e.preventDefault();
+    const handleSignUp = async (event) => {
+        event.preventDefault();
         setError('');
         setSuccess('');
 
-        // Validation
         if (!firstName || !lastName || !email || !password || !confirmPassword) {
             setError('Please fill in all fields');
             return;
@@ -80,37 +75,30 @@ const SignUpPage = () => {
             return;
         }
 
-        if (!passwordRegex.test(password)) {
-            setError('Password must be at least 8 characters and contain at least one symbol (!@#$%^&*)');
+        if (!PASSWORD_REGEX.test(password)) {
+            setError(PASSWORD_RULE_MESSAGE);
             return;
         }
 
         setLoading(true);
 
         try {
-            // Concatenate name as per backend requirement
             const fullName = `${firstName} ${lastName}`.trim();
-
-            const userData = {
+            await userApi.create({
                 name: fullName,
-                email: email,
-                password: password,
-                active: true
-            };
-
-            await userApi.create(userData);
+                email,
+                password,
+                active: true,
+            });
 
             setSuccess('Account created successfully! Redirecting to login...');
-
-            // Redirect after short delay
             setTimeout(() => {
-                navigate('/login');
-            }, 2000);
-
-        } catch (err) {
-            console.error(err);
-            if (err.response && err.response.data && err.response.data.message) {
-                setError(err.response.data.message);
+                navigateWithTransition('/login', {}, 'Preparing sign in...');
+            }, 700);
+        } catch (requestError) {
+            console.error(requestError);
+            if (requestError.response?.data?.message) {
+                setError(requestError.response.data.message);
             } else {
                 setError('Failed to create account. Email may already be taken.');
             }
@@ -119,13 +107,20 @@ const SignUpPage = () => {
         }
     };
 
+    const handleGoogleSignUp = () => {
+        beginTransition('Connecting to Google...');
+        window.setTimeout(() => {
+            startGoogleLogin();
+        }, 90);
+    };
+
     return (
         <div className="auth-container">
             <div className="auth-left">
                 <div className="auth-content">
-                    <h1 className="auth-title">Create Account ✨</h1>
+                    <h1 className="auth-title">Create Account</h1>
                     <p className="auth-subtitle">
-                        Join us today! Enter your details below.
+                        Create your account to access the library.
                     </p>
 
                     {error && <div style={{ color: 'red', marginBottom: '1rem', fontSize: '0.9rem', background: '#fee2e2', padding: '0.5rem', borderRadius: '8px' }}>{error}</div>}
@@ -140,7 +135,7 @@ const SignUpPage = () => {
                                     id="firstName"
                                     placeholder="James"
                                     value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
+                                    onChange={(event) => setFirstName(event.target.value)}
                                     required
                                 />
                             </div>
@@ -151,7 +146,7 @@ const SignUpPage = () => {
                                     id="lastName"
                                     placeholder="Franco"
                                     value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
+                                    onChange={(event) => setLastName(event.target.value)}
                                     required
                                 />
                             </div>
@@ -162,9 +157,9 @@ const SignUpPage = () => {
                             <input
                                 type="email"
                                 id="email"
-                                placeholder="User@email.com"
+                                placeholder="user@email.com"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(event) => setEmail(event.target.value)}
                                 required
                             />
                         </div>
@@ -173,7 +168,7 @@ const SignUpPage = () => {
                             id="password"
                             label="Password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(event) => setPassword(event.target.value)}
                             placeholder="Enter password"
                             show={showPassword}
                             onToggle={() => setShowPassword(!showPassword)}
@@ -183,7 +178,7 @@ const SignUpPage = () => {
                             id="confirmPassword"
                             label="Confirm Password"
                             value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            onChange={(event) => setConfirmPassword(event.target.value)}
                             placeholder="Re-enter password"
                             show={showConfirmPassword}
                             onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -194,13 +189,20 @@ const SignUpPage = () => {
                         </button>
                     </form>
 
-                    <div className="auth-redirect">
-                        Already have an account? <Link to="/login" style={{ color: '#2563eb' }}>Log in</Link>
+                    <div className="auth-divider">
+                        <span>Or</span>
                     </div>
 
-                    <footer className="auth-copyright">
-                        © 2023 ALL RIGHTS RESERVED
-                    </footer>
+                    <div className="social-auth">
+                        <button type="button" className="btn-social" onClick={handleGoogleSignUp}>
+                            <img src={GoogleLogo} alt="Google" width="24" height="24" />
+                            Sign up with Google
+                        </button>
+                    </div>
+
+                    <div className="auth-redirect">
+                        Already have an account? <Link to="/login" onClick={() => beginTransition('Loading sign in...')} style={{ color: '#2563eb' }}>Log in</Link>
+                    </div>
                 </div>
             </div>
 
@@ -208,7 +210,7 @@ const SignUpPage = () => {
                 <div className="auth-image-overlay">
                     <img
                         src={SignInImage}
-                        alt="Floral Still Life"
+                        alt="Library Sign Up"
                         className="auth-hero-image"
                     />
                 </div>
@@ -218,4 +220,3 @@ const SignUpPage = () => {
 };
 
 export default SignUpPage;
-

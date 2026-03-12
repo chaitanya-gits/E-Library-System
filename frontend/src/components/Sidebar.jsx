@@ -1,16 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { usePageTransition } from './pageTransitionContext';
 import '../styles/SidebarDropdown.css';
 
-
 const Sidebar = () => {
-    const navigate = useNavigate();
+    const { beginTransition, navigateWithTransition } = usePageTransition();
     const [user, setUser] = useState(null);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [profileImage, setProfileImage] = useState(null);
     const fileInputRef = useRef(null);
 
-    // Generate consistent color based on name
     const getAvatarColor = (name) => {
         const colors = ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF'];
         if (!name) return '#E2E8F0';
@@ -26,13 +25,7 @@ const Sidebar = () => {
         if (userData) {
             const parsedUser = JSON.parse(userData);
             setUser(parsedUser);
-            // Load profile image specifically for this user
-            // We check if the user object has a profileImage property first
-            if (parsedUser.profileImage) {
-                setProfileImage(parsedUser.profileImage);
-            } else {
-                setProfileImage(null);
-            }
+            setProfileImage(parsedUser.profileImage || null);
         }
 
         const handleProfileUpdate = (event) => {
@@ -41,18 +34,16 @@ const Sidebar = () => {
             }
         };
 
-        window.addEventListener('profileImageUpdated', handleProfileUpdate);
-
         const handleUserUpdate = (event) => {
             if (event.detail?.user) {
                 setUser(event.detail.user);
-                // Also update profile image if it exists in the updated user object
                 if (event.detail.user.profileImage) {
                     setProfileImage(event.detail.user.profileImage);
                 }
             }
         };
 
+        window.addEventListener('profileImageUpdated', handleProfileUpdate);
         window.addEventListener('userUpdated', handleUserUpdate);
 
         return () => {
@@ -76,21 +67,17 @@ const Sidebar = () => {
         }
     }, [isDarkMode]);
 
-
-
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('isAuthenticated');
-        // We DO NOT remove 'profileImage' global key anymore because we aren't using it. 
-        // But for cleanup of legacy data, we can remove it.
         localStorage.removeItem('profileImage');
-        navigate('/login');
+        navigateWithTransition('/login', {}, 'Signing you out...');
     };
 
     const handleSettings = () => {
         setShowUserMenu(false);
-        navigate('/settings');
+        navigateWithTransition('/settings', {}, 'Opening settings...');
     };
 
     const toggleUserMenu = () => {
@@ -109,13 +96,11 @@ const Sidebar = () => {
                 const base64String = reader.result;
                 setProfileImage(base64String);
 
-                // Update USER object in localStorage, not a global key
                 const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
                 currentUser.profileImage = base64String;
                 localStorage.setItem('user', JSON.stringify(currentUser));
                 setUser(currentUser);
 
-                // Notify other components
                 window.dispatchEvent(new CustomEvent('profileImageUpdated', {
                     detail: { profileImage: base64String }
                 }));
@@ -126,15 +111,13 @@ const Sidebar = () => {
 
     return (
         <aside className="sidebar">
-            {/* Brand */}
-            <div className="brand" onClick={() => navigate('/books')} style={{ cursor: 'pointer' }}>
+            <div className="brand" onClick={() => navigateWithTransition('/books', {}, 'Loading your library...')} style={{ cursor: 'pointer' }}>
                 <span className="brand-text">StacXlabs</span>
             </div>
 
-            {/* Browse Section */}
             <div className="menu-group">
                 <div className="menu-label">BROWSE</div>
-                <NavLink to="/books" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/books" onClick={() => beginTransition('Loading your library...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -144,7 +127,7 @@ const Sidebar = () => {
                     <span>Discover</span>
                 </NavLink>
 
-                <NavLink to="/category" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/category" onClick={() => beginTransition('Loading categories...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="3" y="3" width="7" height="7"></rect>
@@ -157,10 +140,9 @@ const Sidebar = () => {
                 </NavLink>
             </div>
 
-            {/* Library Section */}
             <div className="menu-group">
                 <div className="menu-label">LIBRARY</div>
-                <NavLink to="/library" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/library" onClick={() => beginTransition('Loading your library...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -170,7 +152,7 @@ const Sidebar = () => {
                     <span>My Library</span>
                 </NavLink>
 
-                <NavLink to="/downloads" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/downloads" onClick={() => beginTransition('Loading downloads...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -181,7 +163,7 @@ const Sidebar = () => {
                     <span>Downloads</span>
                 </NavLink>
 
-                <NavLink to="/favorites" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/favorites" onClick={() => beginTransition('Loading favorites...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -191,7 +173,6 @@ const Sidebar = () => {
                 </NavLink>
             </div>
 
-            {/* User Profile Section */}
             <div className="sidebar-user-section">
                 <input
                     type="file"
@@ -201,11 +182,8 @@ const Sidebar = () => {
                     style={{ display: 'none' }}
                 />
 
-                {/* Dropdown Menu - New Design */}
-                {/* Dropdown Menu - New Design */}
                 {showUserMenu && (
                     <div className="user-dropdown-menu">
-                        {/* Menu Items */}
                         <div className="user-dropdown-item" onClick={handleSettings}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -214,7 +192,7 @@ const Sidebar = () => {
                             <span>Settings</span>
                         </div>
 
-                        <div className="user-dropdown-item upgrade-item" onClick={() => navigate('/upgrade')}>
+                        <div className="user-dropdown-item upgrade-item" onClick={() => navigateWithTransition('/upgrade', {}, 'Opening plans...')}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="icon-blue">
                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                             </svg>
@@ -234,12 +212,11 @@ const Sidebar = () => {
                     </div>
                 )}
 
-                {/* Profile Bar */}
                 <div className="sidebar-user-profile" onClick={toggleUserMenu}>
                     <div
                         className="user-profile-avatar"
-                        onDoubleClick={(e) => {
-                            e.stopPropagation();
+                        onDoubleClick={(event) => {
+                            event.stopPropagation();
                             handleAvatarDoubleClick();
                         }}
                         title="Double-click to change profile picture"

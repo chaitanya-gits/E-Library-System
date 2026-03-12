@@ -7,9 +7,12 @@ import com.elibrary.exception.ResourceNotFoundException;
 import com.elibrary.repository.LoanRepository;
 import com.elibrary.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,124 +20,161 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserService {
 
-        private final UserRepository userRepository;
-        private final LoanRepository loanRepository;
+    private static final Pattern STRONG_PASSWORD_PATTERN =
+            Pattern.compile("^(?=.*[!@#$%^&*])(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d!@#$%^&*]{8,}$");
 
-        public List<UserDTO> getAllUsers() {
-                return userRepository.findAll().stream()
-                                .map(this::toDTO)
-                                .collect(Collectors.toList());
+    private final UserRepository userRepository;
+    private final LoanRepository loanRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public UserDTO getUserById(Long id) {
+        return toDTO(findUserById(id));
+    }
+
+    public List<UserDTO> searchUsers(String name) {
+        return userRepository.findByNameContainingIgnoreCase(name).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public UserDTO createUser(UserDTO dto) {
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new BusinessException("User with email " + dto.getEmail() + " already exists");
         }
 
-        public UserDTO getUserById(Long id) {
-                return toDTO(findUserById(id));
+        validatePassword(dto.getPassword());
+
+        User user = toEntity(dto);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        User savedUser = userRepository.save(user);
+        return toDTO(savedUser);
+    }
+
+    public UserDTO findOrCreateGoogleUser(String name, String email) {
+        if (isBlank(email)) {
+            throw new BusinessException("Google account did not provide an email address");
         }
 
-        public List<UserDTO> searchUsers(String name) {
-                return userRepository.findByNameContainingIgnoreCase(name).stream()
-                                .map(this::toDTO)
-                                .collect(Collectors.toList());
+        User user = userRepository.findByEmail(email)
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .name(isBlank(name) ? email : name)
+                        .email(email)
+                        .active(true)
+                        .build()));
+
+        if (isBlank(user.getName()) && !isBlank(name)) {
+            user.setName(name);
+            user = userRepository.save(user);
         }
 
-        public UserDTO createUser(UserDTO dto) {
-                if (userRepository.existsByEmail(dto.getEmail())) {
-                        throw new BusinessException("User with email " + dto.getEmail() + " already exists");
-                }
-
-                User user = toEntity(dto);
-                // In a real app, hash the password here
-                user.setPassword(dto.getPassword());
-
-                User savedUser = userRepository.save(user);
-
-                return toDTO(savedUser);
+        return toDTO(user);
+    }
+    public UserDTO login(String email, String password) {
+        if (isBlank(email) || isBlank(password)) {
+            throw new BusinessException("Email and password are required");
         }
 
-        public UserDTO login(String email, String password) {
-                User user = userRepository.findByEmail(email)
-                                .orElseThrow(() -> new BusinessException("Invalid email or password"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("Invalid email or password"));
 
-                // In a real app, verify hash here
-                if (!user.getPassword().equals(password)) {
-                        throw new BusinessException("Invalid email or password");
-                }
-
-                return toDTO(user);
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new BusinessException("Invalid email or password");
         }
 
-        public UserDTO resetPassword(String email, String newPassword) {
-                User user = userRepository.findByEmail(email)
-                                .orElseThrow(() -> new BusinessException("User with email " + email + " not found"));
+        return toDTO(user);
+    }
 
-                // In a real app, hash the password here
-                user.setPassword(newPassword);
-
-                User savedUser = userRepository.save(user);
-
-                return toDTO(savedUser);
+    public UserDTO resetPassword(String email, String newPassword) {
+        if (isBlank(email)) {
+            throw new BusinessException("Email is required");
         }
 
-        public UserDTO updateUser(Long id, UserDTO dto) {
-                User user = findUserById(id);
+        validatePassword(newPassword);
 
-                // Update name, phone, address, and active status
-                user.setName(dto.getName());
-                user.setPhone(dto.getPhone());
-                user.setAddress(dto.getAddress());
-                user.setActive(dto.getActive());
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("User with email " + email + " not found"));
 
-                // Update email if provided and different from current email
-                if (dto.getEmail() != null) {
-                        // Only check for duplicates if email is actually changing
-                        if (!dto.getEmail().equals(user.getEmail())) {
-                                if (userRepository.existsByEmail(dto.getEmail())) {
-                                        throw new BusinessException("Email " + dto.getEmail() + " is already in use");
-                                }
-                        }
-                        user.setEmail(dto.getEmail());
-                }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        User savedUser = userRepository.save(user);
 
-                return toDTO(userRepository.save(user));
+        return toDTO(savedUser);
+    }
+
+    public UserDTO updateUser(Long id, UserDTO dto) {
+        User user = findUserById(id);
+
+        user.setName(dto.getName());
+        user.setPhone(dto.getPhone());
+        user.setAddress(dto.getAddress());
+        user.setActive(dto.getActive());
+
+        if (dto.getEmail() != null) {
+            if (!dto.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
+                throw new BusinessException("Email " + dto.getEmail() + " is already in use");
+            }
+            user.setEmail(dto.getEmail());
         }
 
-        public void deleteUser(Long id) {
-                User user = findUserById(id);
-                long activeLoans = loanRepository.countByUserIdAndStatus(id,
-                                com.elibrary.entity.Loan.LoanStatus.ACTIVE);
-                if (activeLoans > 0) {
-                        throw new BusinessException("Cannot delete user with active loans");
-                }
-                userRepository.delete(user);
-        }
+        return toDTO(userRepository.save(user));
+    }
 
-        private User findUserById(Long id) {
-                return userRepository.findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    public void deleteUser(Long id) {
+        User user = findUserById(id);
+        long activeLoans = loanRepository.countByUserIdAndStatus(id, com.elibrary.entity.Loan.LoanStatus.ACTIVE);
+        if (activeLoans > 0) {
+            throw new BusinessException("Cannot delete user with active loans");
         }
+        userRepository.delete(user);
+    }
 
-        private UserDTO toDTO(User user) {
-                int activeLoans = (int) loanRepository.countByUserIdAndStatus(user.getId(),
-                                com.elibrary.entity.Loan.LoanStatus.ACTIVE);
-                return UserDTO.builder()
-                                .id(user.getId())
-                                .name(user.getName())
-                                .email(user.getEmail())
-                                .phone(user.getPhone())
-                                .address(user.getAddress())
-                                .membershipDate(user.getMembershipDate())
-                                .active(user.getActive())
-                                .activeLoans(activeLoans)
-                                .build();
-        }
+    private User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }
 
-        private User toEntity(UserDTO dto) {
-                return User.builder()
-                                .name(dto.getName())
-                                .email(dto.getEmail())
-                                .password(dto.getPassword())
-                                .phone(dto.getPhone())
-                                .address(dto.getAddress())
-                                .active(true)
-                                .build();
+    private UserDTO toDTO(User user) {
+        int activeLoans = (int) loanRepository.countByUserIdAndStatus(user.getId(),
+                com.elibrary.entity.Loan.LoanStatus.ACTIVE);
+        return UserDTO.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .address(user.getAddress())
+                .membershipDate(user.getMembershipDate())
+                .active(user.getActive())
+                .activeLoans(activeLoans)
+                .build();
+    }
+
+    private User toEntity(UserDTO dto) {
+        return User.builder()
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .phone(dto.getPhone())
+                .address(dto.getAddress())
+                .active(true)
+                .build();
+    }
+
+    private void validatePassword(String password) {
+        if (isBlank(password)) {
+            throw new BusinessException("Password is required");
         }
+        if (!STRONG_PASSWORD_PATTERN.matcher(password).matches()) {
+            throw new BusinessException("Password must be at least 8 characters and include a letter, a number, and a symbol (!@#$%^&*)");
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
 }
+

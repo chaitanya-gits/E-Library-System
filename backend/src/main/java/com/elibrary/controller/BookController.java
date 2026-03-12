@@ -12,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class BookController {
 
     private final BookService bookService;
@@ -58,3 +57,4 @@ public class BookController {
         return ResponseEntity.noContent().build();
     }
 }
+

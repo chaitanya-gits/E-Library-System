@@ -3,18 +3,30 @@ spring:
     name: e-library-system
 
   datasource:
-    url: jdbc:postgresql://db.ynykusfuerewikqnpbrz.supabase.co:5432/postgres
-    username: postgres
-    password: 6281406276!@
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:elibrary}?sslmode=require}
+    username: ${DB_USER:elibrary}
+    password: ${DB_PASSWORD:elibrary_secret}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
 
   jackson:
     serialization:
@@ -22,7 +34,7 @@ spring:
     date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
 
 server:
-  port: ${PORT:8088}
+  port: ${PORT:${BACKEND_PORT:8080}}
 
 management:
   endpoints:
@@ -31,9 +43,14 @@ management:
         include: health,info,metrics
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: never
 
 logging:
   level:
     com.elibrary: INFO
     org.springframework: INFO
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+  frontend-url: ${FRONTEND_APP_URL:http://localhost:3000}

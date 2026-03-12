@@ -1,10 +1,14 @@
 spring:
+  config:
+    activate:
+      on-profile: dev
+
   datasource:
     url: jdbc:h2:mem:elibrary;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
-  
+
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -12,7 +16,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-  
+
   h2:
     console:
       enabled: true
@@ -21,4 +25,4 @@ spring:
 logging:
   level:
     com.elibrary: DEBUG
-    org.springframework: DEBUG
+    org.springframework: INFO

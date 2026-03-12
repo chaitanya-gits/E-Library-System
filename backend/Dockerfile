@@ -11,8 +11,8 @@ WORKDIR /app
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 
-# Make mvnw executable
-RUN chmod +x mvnw
+# Normalize line endings for Linux containers, then make mvnw executable
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 
 # Download dependencies (cached layer)
 RUN ./mvnw dependency:go-offline -B
