@@ -3,9 +3,9 @@ spring:
     name: e-library-system
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:elibrary}?sslmode=require}
-    username: ${DB_USER:elibrary}
-    password: ${DB_PASSWORD:elibrary_secret}
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:${PGHOST:localhost}}:${DB_PORT:${PGPORT:5432}}/${DB_NAME:${PGDATABASE:elibrary}}?sslmode=${DB_SSL_MODE:${PGSSLMODE:require}}}
+    username: ${DB_USER:${PGUSER:elibrary}}
+    password: ${DB_PASSWORD:${PGPASSWORD:elibrary_secret}}
     driver-class-name: org.postgresql.Driver
 
   jpa:

@@ -50,8 +50,11 @@ RUN npm run build
 # ================================
 FROM nginx:alpine AS production
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Default upstream for containerized local deployments.
+ENV BACKEND_UPSTREAM=http://backend:8080
+
+# Copy templated nginx config
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
@@ -61,6 +64,6 @@ EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/ || exit 1
+    CMD wget -qO- http://localhost/ >/dev/null || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

@@ -80,7 +80,7 @@ Local development can also run the backend with the `dev` profile using an in-me
 
 - GitHub Actions workflow in [ci.yml](G:\E-Library-System\.github\workflows\ci.yml)
 - GitLab CI file in [.gitlab-ci.yml](G:\E-Library-System\.gitlab-ci.yml)
-- Render blueprint in [render.yaml](G:\E-Library-System\render.yaml)
+- Railway deployment guide in [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md)
 - Docker Compose deployment files in [docker-compose.yml](G:\E-Library-System\docker-compose.yml) and [docker-compose.override.yml](G:\E-Library-System\docker-compose.override.yml)
 
 ## Repository Structure
@@ -114,7 +114,6 @@ E-Library-System/
 |-- .github/workflows/
 |-- docker-compose.yml
 |-- docker-compose.override.yml
-|-- render.yaml
 |-- DEPLOYMENT.md
 `-- README.md
 ```
@@ -371,13 +370,9 @@ The repository also contains a GitLab CI file in [\.gitlab-ci.yml](G:\E-Library-
 - Docker Compose stack from [docker-compose.yml](G:\E-Library-System\docker-compose.yml)
 - Development overrides from [docker-compose.override.yml](G:\E-Library-System\docker-compose.override.yml)
 
-### Render
-
-The repo currently includes a Render blueprint in [render.yaml](G:\E-Library-System\render.yaml) and deployment notes in [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md).
-
 ### Railway
 
-Railway is a viable target for this stack because the backend is Spring Boot and the frontend is containerized React/Nginx, but this repository does not currently include dedicated Railway config files. If Railway is the target production platform, the deployment documentation should be aligned to Railway instead of Render.
+This repository is now aligned to Railway deployment. Use [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md) for backend/frontend environment variables and health check setup.
 
 ## Key Project Files
 
@@ -385,7 +380,6 @@ Railway is a viable target for this stack because the backend is Spring Boot and
 - [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md)
 - [.env.example](G:\E-Library-System\.env.example)
 - [docker-compose.yml](G:\E-Library-System\docker-compose.yml)
-- [render.yaml](G:\E-Library-System\render.yaml)
 - [backend/pom.xml](G:\E-Library-System\backend\pom.xml)
 - [backend/src/main/resources/application.yml](G:\E-Library-System\backend\src\main\resources\application.yml)
 - [frontend/package.json](G:\E-Library-System\frontend\package.json)
