@@ -75,6 +75,7 @@ Notes:
 
 - Source: GitHub repo
 - Root directory: `backend`
+- Config file: `backend/railway.json`
 - Builder: Dockerfile
 - Health check path: `/actuator/health`
 
@@ -82,7 +83,14 @@ Notes:
 
 - Source: GitHub repo
 - Root directory: `frontend`
+- Config file: `frontend/railway.json`
 - Builder: Dockerfile
+
+Important:
+
+- If Railway builds from the repository root, it will use Railpack and fail because this is a monorepo
+- Each Railway service must point to its own root directory: `backend` for the API and `frontend` for the UI
+- The new `railway.json` files force Dockerfile builds once the correct service root directory is selected
 
 ## Redeploy Checklist
 
