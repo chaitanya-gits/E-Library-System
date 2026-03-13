@@ -57,5 +57,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 # JVM optimizations for containers
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
 
-# Render provides Postgres URLs as postgresql://...; convert that to JDBC when needed.
-ENTRYPOINT ["sh", "-c", "if [ -z \"$DB_URL\" ] && [ -n \"$DATABASE_URL\" ]; then case \"$DATABASE_URL\" in postgresql://*|postgres://*) export DB_URL=\"jdbc:${DATABASE_URL}\"; case \"$DB_URL\" in *\\?*) ;; *) export DB_URL=\"${DB_URL}?sslmode=${DB_SSL_MODE:-require}\" ;; esac ;; esac; fi; java $JAVA_OPTS -jar app.jar"]
+# Run the application
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

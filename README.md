@@ -80,8 +80,7 @@ Local development can also run the backend with the `dev` profile using an in-me
 
 - GitHub Actions workflow in [ci.yml](G:\E-Library-System\.github\workflows\ci.yml)
 - GitLab CI file in [.gitlab-ci.yml](G:\E-Library-System\.gitlab-ci.yml)
-- Render deployment guide in [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md)
-- Render blueprint in [render.yaml](G:\E-Library-System\render.yaml)
+- Railway deployment guide in [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md)
 - Docker Compose deployment files in [docker-compose.yml](G:\E-Library-System\docker-compose.yml) and [docker-compose.override.yml](G:\E-Library-System\docker-compose.override.yml)
 
 ## Repository Structure
@@ -371,9 +370,9 @@ The repository also contains a GitLab CI file in [\.gitlab-ci.yml](G:\E-Library-
 - Docker Compose stack from [docker-compose.yml](G:\E-Library-System\docker-compose.yml)
 - Development overrides from [docker-compose.override.yml](G:\E-Library-System\docker-compose.override.yml)
 
-### Render
+### Railway
 
-This repository is aligned to Render deployment. Use [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md) for the Render service layout, environment variables, and deployment steps.
+This repository is now aligned to Railway deployment. Use [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md) for backend/frontend environment variables and health check setup.
 
 ## Key Project Files
 
