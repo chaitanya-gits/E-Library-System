@@ -1,0 +1,56 @@
+services:
+  - type: web
+    name: elibrary-backend
+    runtime: docker
+    plan: starter
+    region: oregon
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: docker
+      - key: DATABASE_URL
+        fromDatabase:
+          name: elibrary-db
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: elibrary-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: elibrary-db
+          property: password
+      - key: DB_SSL_MODE
+        value: require
+      - key: FRONTEND_APP_URL
+        sync: false
+      - key: APP_CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+  - type: web
+    name: elibrary-frontend
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_AUTH_BASE_URL
+        sync: false
+
+databases:
+  - name: elibrary-db
+    plan: basic-256mb
