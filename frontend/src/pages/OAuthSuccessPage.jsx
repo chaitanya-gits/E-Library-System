@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { usePageTransition } from '../components/pageTransitionContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 function OAuthSuccessPage() {
     const location = useLocation();
-    const { navigateWithTransition } = usePageTransition();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -14,12 +13,12 @@ function OAuthSuccessPage() {
         const error = params.get('error');
 
         if (error) {
-            navigateWithTransition(`/login?error=${encodeURIComponent(error)}`, { replace: true }, 'Returning to sign in...');
+            navigate(`/login?error=${encodeURIComponent(error)}`, { replace: true });
             return;
         }
 
         if (!id || !email) {
-            navigateWithTransition('/login?error=google_auth_failed', { replace: true }, 'Returning to sign in...');
+            navigate('/login?error=google_auth_failed', { replace: true });
             return;
         }
 
@@ -31,8 +30,8 @@ function OAuthSuccessPage() {
             activeLoans: 0,
         }));
         localStorage.setItem('isAuthenticated', 'true');
-        navigateWithTransition('/books', { replace: true }, 'Opening your library...');
-    }, [location.search, navigateWithTransition]);
+        navigate('/books', { replace: true });
+    }, [location.search, navigate]);
 
     return null;
 }

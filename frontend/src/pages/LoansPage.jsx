@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { loanApi } from '../services/api';
-import Loading from '../components/Loading';
 
 function LoansPage() {
     const [loans, setLoans] = useState([]);
     const [filter, setFilter] = useState('all');
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchLoans = async () => {
@@ -24,8 +22,6 @@ function LoansPage() {
                 setLoans(response.data);
             } catch (error) {
                 console.error('Failed to fetch loans:', error);
-            } finally {
-                setLoading(false);
             }
         };
         fetchLoans();
@@ -39,8 +35,6 @@ function LoansPage() {
             default: return '';
         }
     };
-
-    if (loading) return <Loading />;
 
     return (
         <div>

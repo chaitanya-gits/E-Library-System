@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { bookApi } from '../services/api';
-import Loading from '../components/Loading';
 import BookDetailsModal from '../components/BookDetailsModal';
 import '../styles/BooksPage.css';
 
@@ -274,13 +273,10 @@ function BooksPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGenre] = useState('All Genres');
     const [selectedBook, setSelectedBook] = useState(null);
-    const [loading, setLoading] = useState(false);
-
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                setLoading(true);
                 const response = await bookApi.getAll();
                 if (response.data && response.data.length > 0) {
                     // Merge API books with sample images for demo
@@ -294,8 +290,6 @@ function BooksPage() {
             } catch (error) {
                 console.error('Failed to fetch books:', error);
                 // Keep sample data if API fails
-            } finally {
-                setLoading(false);
             }
         };
         fetchBooks();
@@ -324,13 +318,6 @@ function BooksPage() {
     const handleSearch = (e) => {
         e.preventDefault();
     };
-
-
-
-
-
-    if (loading) return <Loading />;
-
     return (
         <div className="books-page">
             {/* Glassmorphic Blob Accent */}

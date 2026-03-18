@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { userApi } from '../services/api';
-import Loading from '../components/Loading';
 
 function UsersPage() {
     const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -13,14 +11,10 @@ function UsersPage() {
                 setUsers(response.data);
             } catch (error) {
                 console.error('Failed to fetch users:', error);
-            } finally {
-                setLoading(false);
             }
         };
         fetchUsers();
     }, []);
-
-    if (loading) return <Loading />;
 
     return (
         <div>

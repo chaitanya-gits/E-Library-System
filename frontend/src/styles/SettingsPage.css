@@ -21,12 +21,6 @@
     margin: 0;
 }
 
-.settings-loading {
-    text-align: center;
-    padding: 3rem;
-    color: #64748b;
-}
-
 /* Profile Card */
 .profile-card {
     background: white;

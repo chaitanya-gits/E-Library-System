@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import GoogleLogo from '../assets/images/google-logo.svg';
 import SignInImage from '../assets/images/SignIn_Image.jpg';
-import { usePageTransition } from '../components/pageTransitionContext';
 import { userApi } from '../services/api';
 import { startGoogleLogin } from '../services/socialAuth';
 import { PASSWORD_REGEX, PASSWORD_RULE_MESSAGE } from '../utils/auth';
@@ -48,7 +47,7 @@ const PasswordInput = ({ id, value, onChange, placeholder, show, onToggle, label
 );
 
 const SignUpPage = () => {
-    const { beginTransition, navigateWithTransition } = usePageTransition();
+    const navigate = useNavigate();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -58,8 +57,6 @@ const SignUpPage = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [loading, setLoading] = useState(false);
-
     const handleSignUp = async (event) => {
         event.preventDefault();
         setError('');
@@ -80,8 +77,6 @@ const SignUpPage = () => {
             return;
         }
 
-        setLoading(true);
-
         try {
             const fullName = `${firstName} ${lastName}`.trim();
             await userApi.create({
@@ -93,7 +88,7 @@ const SignUpPage = () => {
 
             setSuccess('Account created successfully! Redirecting to login...');
             setTimeout(() => {
-                navigateWithTransition('/login', {}, 'Preparing sign in...');
+                navigate('/login');
             }, 700);
         } catch (requestError) {
             console.error(requestError);
@@ -102,16 +97,11 @@ const SignUpPage = () => {
             } else {
                 setError('Failed to create account. Email may already be taken.');
             }
-        } finally {
-            setLoading(false);
         }
     };
 
     const handleGoogleSignUp = () => {
-        beginTransition('Connecting to Google...');
-        window.setTimeout(() => {
-            startGoogleLogin();
-        }, 90);
+        startGoogleLogin();
     };
 
     return (
@@ -184,9 +174,7 @@ const SignUpPage = () => {
                             onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
                         />
 
-                        <button type="submit" className="btn-auth-primary" disabled={loading}>
-                            {loading ? 'Creating Account...' : 'Sign Up'}
-                        </button>
+                        <button type="submit" className="btn-auth-primary">Sign Up</button>
                     </form>
 
                     <div className="auth-divider">
@@ -201,7 +189,7 @@ const SignUpPage = () => {
                     </div>
 
                     <div className="auth-redirect">
-                        Already have an account? <Link to="/login" onClick={() => beginTransition('Loading sign in...')} style={{ color: '#2563eb' }}>Log in</Link>
+                        Already have an account? <Link to="/login" style={{ color: '#2563eb' }}>Log in</Link>
                     </div>
                 </div>
             </div>

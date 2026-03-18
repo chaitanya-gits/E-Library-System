@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import GoogleLogo from '../assets/images/google-logo.svg';
 import SignInImage from '../assets/images/SignIn_Image.jpg';
-import { usePageTransition } from '../components/pageTransitionContext';
 import { userApi } from '../services/api';
 import { startGoogleLogin } from '../services/socialAuth';
 import { PASSWORD_REGEX, PASSWORD_RULE_MESSAGE } from '../utils/auth';
@@ -49,7 +48,7 @@ const PasswordInput = ({ id, value, onChange, placeholder, show, onToggle, label
 
 const LoginPage = () => {
     const [searchParams] = useSearchParams();
-    const { beginTransition, navigateWithTransition } = usePageTransition();
+    const navigate = useNavigate();
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -83,7 +82,7 @@ const LoginPage = () => {
             const response = await userApi.login(email, password);
             localStorage.setItem('user', JSON.stringify(response.data));
             localStorage.setItem('isAuthenticated', 'true');
-            navigateWithTransition('/books', {}, 'Opening your library...');
+            navigate('/books');
         } catch (requestError) {
             console.error(requestError);
             if (requestError.response?.data?.message) {
@@ -95,10 +94,7 @@ const LoginPage = () => {
     };
 
     const handleGoogleSignIn = () => {
-        beginTransition('Connecting to Google...');
-        window.setTimeout(() => {
-            startGoogleLogin();
-        }, 90);
+        startGoogleLogin();
     };
 
     const handleResetPassword = async (event) => {
@@ -264,7 +260,7 @@ const LoginPage = () => {
 
                     {!isForgotPassword && (
                         <div className="auth-redirect">
-                            Don&apos;t have an account? <Link to="/signup" onClick={() => beginTransition('Loading sign up...')} style={{ color: '#2563eb' }}>Sign up</Link>
+                            Don&apos;t have an account? <Link to="/signup" style={{ color: '#2563eb' }}>Sign up</Link>
                         </div>
                     )}
                 </div>

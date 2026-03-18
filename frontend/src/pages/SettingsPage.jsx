@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { usePageTransition } from '../components/pageTransitionContext';
+import { useNavigate } from 'react-router-dom';
 import '../styles/SettingsPage.css';
 import { userApi } from '../services/api';
 
 const SettingsPage = () => {
-    const { navigateWithTransition } = usePageTransition();
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
     const fileInputRef = useRef(null);
@@ -56,7 +56,7 @@ const SettingsPage = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('profileImage');
-        navigateWithTransition('/login', {}, 'Signing you out...');
+        navigate('/login');
     };
 
     const handleSaveChanges = async (e) => {
@@ -141,11 +141,7 @@ const SettingsPage = () => {
     };
 
     if (!user) {
-        return (
-            <div className="settings-page">
-                <div className="settings-loading">Loading...</div>
-            </div>
-        );
+        return null;
     }
 
     return (

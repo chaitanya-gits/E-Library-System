@@ -1,6 +1,6 @@
 # E-Library System
 
-E-Library System is a full-stack library management application with a Spring Boot backend and a React frontend. The project supports book, category, user, and loan management, includes Google OAuth sign-in, ships with Docker-based local development, and contains cloud deployment configuration for container platforms.
+E-Library System is a full-stack library management application with a Spring Boot backend and a React frontend. The project supports book, category, user, and loan management, includes Google OAuth sign-in, and ships with Docker-based local development.
 
 ![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)
@@ -80,7 +80,6 @@ Local development can also run the backend with the `dev` profile using an in-me
 
 - GitHub Actions workflow in [ci.yml](G:\E-Library-System\.github\workflows\ci.yml)
 - GitLab CI file in [.gitlab-ci.yml](G:\E-Library-System\.gitlab-ci.yml)
-- Railway deployment guide in [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md)
 - Docker Compose deployment files in [docker-compose.yml](G:\E-Library-System\docker-compose.yml) and [docker-compose.override.yml](G:\E-Library-System\docker-compose.override.yml)
 
 ## Repository Structure
@@ -114,7 +113,6 @@ E-Library-System/
 |-- .github/workflows/
 |-- docker-compose.yml
 |-- docker-compose.override.yml
-|-- DEPLOYMENT.md
 `-- README.md
 ```
 
@@ -234,7 +232,6 @@ The frontend lives in [frontend](G:\E-Library-System\frontend) and is a Vite-bas
 - OAuth success callback page
 - Settings/profile update page
 - Sidebar-driven navigation
-- Page transition overlay logic
 - Axios-based API service layer
 
 ### Frontend Scripts
@@ -370,14 +367,9 @@ The repository also contains a GitLab CI file in [\.gitlab-ci.yml](G:\E-Library-
 - Docker Compose stack from [docker-compose.yml](G:\E-Library-System\docker-compose.yml)
 - Development overrides from [docker-compose.override.yml](G:\E-Library-System\docker-compose.override.yml)
 
-### Railway
-
-This repository is now aligned to Railway deployment. Use [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md) for backend/frontend environment variables and health check setup.
-
 ## Key Project Files
 
 - [README.md](G:\E-Library-System\README.md)
-- [DEPLOYMENT.md](G:\E-Library-System\DEPLOYMENT.md)
 - [.env.example](G:\E-Library-System\.env.example)
 - [docker-compose.yml](G:\E-Library-System\docker-compose.yml)
 - [backend/pom.xml](G:\E-Library-System\backend\pom.xml)
@@ -392,8 +384,7 @@ The current codebase reflects these notable updates:
 - Spring Security and Google OAuth support added
 - Frontend Google sign-in flow added
 - OAuth success redirect handling added
-- Page transition provider added on the frontend
-- Updated Docker and cloud deployment configuration present in the repo
+- Updated Docker-based local development configuration present in the repo
 
 ## License
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { bookApi } from '../services/api';
-import Loading from '../components/Loading';
 import BookDetailsModal from '../components/BookDetailsModal';
 import '../styles/CategoryPage.css';
 
@@ -243,12 +242,10 @@ function CategoryPage() {
     const [filteredBooks, setFilteredBooks] = useState(sampleBooks);
     const [selectedGenre, setSelectedGenre] = useState('All');
     const [selectedBook, setSelectedBook] = useState(null);
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                setLoading(true);
                 const response = await bookApi.getAll();
                 if (response.data && response.data.length > 0) {
                     const mergedBooks = response.data.map((book, index) => ({
@@ -260,8 +257,6 @@ function CategoryPage() {
                 }
             } catch (error) {
                 console.error('Failed to fetch books:', error);
-            } finally {
-                setLoading(false);
             }
         };
         fetchBooks();
@@ -275,9 +270,6 @@ function CategoryPage() {
             setFilteredBooks(books.filter(book => book.category === selectedGenre));
         }
     }, [selectedGenre, books]);
-
-    if (loading) return <Loading />;
-
     return (
         <div className="category-page">
             {/* Explore Genres Section */}

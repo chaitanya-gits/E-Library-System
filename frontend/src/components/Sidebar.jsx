@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { NavLink } from 'react-router-dom';
-import { usePageTransition } from './pageTransitionContext';
+import { NavLink, useNavigate } from 'react-router-dom';
 import '../styles/SidebarDropdown.css';
 
 const Sidebar = () => {
-    const { beginTransition, navigateWithTransition } = usePageTransition();
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [profileImage, setProfileImage] = useState(null);
@@ -72,12 +71,12 @@ const Sidebar = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('profileImage');
-        navigateWithTransition('/login', {}, 'Signing you out...');
+        navigate('/login');
     };
 
     const handleSettings = () => {
         setShowUserMenu(false);
-        navigateWithTransition('/settings', {}, 'Opening settings...');
+        navigate('/settings');
     };
 
     const toggleUserMenu = () => {
@@ -111,13 +110,13 @@ const Sidebar = () => {
 
     return (
         <aside className="sidebar">
-            <div className="brand" onClick={() => navigateWithTransition('/books', {}, 'Loading your library...')} style={{ cursor: 'pointer' }}>
+            <div className="brand" onClick={() => navigate('/books')} style={{ cursor: 'pointer' }}>
                 <span className="brand-text">StacXlabs</span>
             </div>
 
             <div className="menu-group">
                 <div className="menu-label">BROWSE</div>
-                <NavLink to="/books" onClick={() => beginTransition('Loading your library...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/books" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -127,7 +126,7 @@ const Sidebar = () => {
                     <span>Discover</span>
                 </NavLink>
 
-                <NavLink to="/category" onClick={() => beginTransition('Loading categories...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/category" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="3" y="3" width="7" height="7"></rect>
@@ -142,7 +141,7 @@ const Sidebar = () => {
 
             <div className="menu-group">
                 <div className="menu-label">LIBRARY</div>
-                <NavLink to="/library" onClick={() => beginTransition('Loading your library...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/library" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -152,7 +151,7 @@ const Sidebar = () => {
                     <span>My Library</span>
                 </NavLink>
 
-                <NavLink to="/downloads" onClick={() => beginTransition('Loading downloads...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/downloads" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -163,7 +162,7 @@ const Sidebar = () => {
                     <span>Downloads</span>
                 </NavLink>
 
-                <NavLink to="/favorites" onClick={() => beginTransition('Loading favorites...')} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <NavLink to="/favorites" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <div className="nav-item-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -192,7 +191,7 @@ const Sidebar = () => {
                             <span>Settings</span>
                         </div>
 
-                        <div className="user-dropdown-item upgrade-item" onClick={() => navigateWithTransition('/upgrade', {}, 'Opening plans...')}>
+                        <div className="user-dropdown-item upgrade-item" onClick={() => navigate('/upgrade')}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="icon-blue">
                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                             </svg>
