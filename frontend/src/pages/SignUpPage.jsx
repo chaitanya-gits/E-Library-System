@@ -92,11 +92,16 @@ const SignUpPage = () => {
             }, 700);
         } catch (requestError) {
             console.error(requestError);
-            if (requestError.response?.data?.message) {
-                setError(requestError.response.data.message);
-            } else {
-                setError('Failed to create account. Email may already be taken.');
-            }
+            const responseData = requestError.response?.data;
+            const validationMessage = responseData?.errors
+                ? Object.values(responseData.errors)[0]
+                : null;
+
+            setError(
+                responseData?.message ||
+                validationMessage ||
+                'Failed to create account. Please try again.'
+            );
         }
     };
 

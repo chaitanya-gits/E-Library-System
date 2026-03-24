@@ -7,11 +7,13 @@ import com.elibrary.exception.ResourceNotFoundException;
 import com.elibrary.repository.LoanRepository;
 import com.elibrary.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -44,28 +46,37 @@ public class UserService {
     }
 
     public UserDTO createUser(UserDTO dto) {
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new BusinessException("User with email " + dto.getEmail() + " already exists");
+        String normalizedEmail = normalizeEmail(dto.getEmail());
+
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+            throw new BusinessException("User with email " + normalizedEmail + " already exists");
         }
 
         validatePassword(dto.getPassword());
 
         User user = toEntity(dto);
+        user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        User savedUser = userRepository.save(user);
-        return toDTO(savedUser);
+        try {
+            User savedUser = userRepository.save(user);
+            return toDTO(savedUser);
+        } catch (DataIntegrityViolationException exception) {
+            throw new BusinessException("User with email " + normalizedEmail + " already exists");
+        }
     }
 
     public UserDTO findOrCreateGoogleUser(String name, String email) {
-        if (isBlank(email)) {
+        String normalizedEmail = normalizeEmail(email);
+
+        if (isBlank(normalizedEmail)) {
             throw new BusinessException("Google account did not provide an email address");
         }
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseGet(() -> userRepository.save(User.builder()
                         .name(isBlank(name) ? email : name)
-                        .email(email)
+                        .email(normalizedEmail)
                         .active(true)
                         .build()));
 
@@ -77,11 +88,13 @@ public class UserService {
         return toDTO(user);
     }
     public UserDTO login(String email, String password) {
-        if (isBlank(email) || isBlank(password)) {
+        String normalizedEmail = normalizeEmail(email);
+
+        if (isBlank(normalizedEmail) || isBlank(password)) {
             throw new BusinessException("Email and password are required");
         }
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new BusinessException("Invalid email or password"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -92,14 +105,16 @@ public class UserService {
     }
 
     public UserDTO resetPassword(String email, String newPassword) {
-        if (isBlank(email)) {
+        String normalizedEmail = normalizeEmail(email);
+
+        if (isBlank(normalizedEmail)) {
             throw new BusinessException("Email is required");
         }
 
         validatePassword(newPassword);
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException("User with email " + email + " not found"));
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
+                .orElseThrow(() -> new BusinessException("User with email " + normalizedEmail + " not found"));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         User savedUser = userRepository.save(user);
@@ -116,10 +131,11 @@ public class UserService {
         user.setActive(dto.getActive());
 
         if (dto.getEmail() != null) {
-            if (!dto.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
-                throw new BusinessException("Email " + dto.getEmail() + " is already in use");
+            String normalizedEmail = normalizeEmail(dto.getEmail());
+            if (!normalizedEmail.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+                throw new BusinessException("Email " + normalizedEmail + " is already in use");
             }
-            user.setEmail(dto.getEmail());
+            user.setEmail(normalizedEmail);
         }
 
         return toDTO(userRepository.save(user));
@@ -157,7 +173,7 @@ public class UserService {
     private User toEntity(UserDTO dto) {
         return User.builder()
                 .name(dto.getName())
-                .email(dto.getEmail())
+                .email(normalizeEmail(dto.getEmail()))
                 .phone(dto.getPhone())
                 .address(dto.getAddress())
                 .active(true)
@@ -175,6 +191,13 @@ public class UserService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 }
 
