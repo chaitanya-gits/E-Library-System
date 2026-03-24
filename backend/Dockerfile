@@ -47,12 +47,12 @@ RUN chown -R appuser:appgroup /app
 
 USER appuser
 
-# Expose port
+# Expose the default local port. Render overrides this with $PORT.
 EXPOSE 8080
 
-# Health check
+# Keep the image health check aligned with local and Render port bindings.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+    CMD sh -c 'curl -f "http://localhost:${PORT:-8080}/actuator/health" || exit 1'
 
 # JVM optimizations for containers
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"

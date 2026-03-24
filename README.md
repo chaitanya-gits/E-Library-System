@@ -367,9 +367,35 @@ The repository also contains a GitLab CI file in [\.gitlab-ci.yml](G:\E-Library-
 - Docker Compose stack from [docker-compose.yml](G:\E-Library-System\docker-compose.yml)
 - Development overrides from [docker-compose.override.yml](G:\E-Library-System\docker-compose.override.yml)
 
+### Render (Free)
+
+- Render Blueprint config is in [render.yaml](G:\E-Library-System\render.yaml)
+- Recommended free setup:
+  - Backend as a Render web service
+  - Frontend as a Render static site
+  - Database on Neon or Supabase, not Render Postgres free tier
+- Required backend env vars:
+  - `DB_URL`
+  - `DB_USER`
+  - `DB_PASSWORD`
+  - `GOOGLE_CLIENT_ID`
+  - `GOOGLE_CLIENT_SECRET`
+  - `FRONTEND_APP_URL`
+  - `APP_CORS_ALLOWED_ORIGINS`
+- Required frontend env vars:
+  - `VITE_API_URL`
+  - `VITE_AUTH_BASE_URL`
+- For Render, set the frontend values to the public backend URL:
+  - `VITE_API_URL=https://<your-backend>.onrender.com/api`
+  - `VITE_AUTH_BASE_URL=https://<your-backend>.onrender.com`
+- Set the backend values to the public frontend URL:
+  - `FRONTEND_APP_URL=https://<your-frontend>.onrender.com`
+  - `APP_CORS_ALLOWED_ORIGINS=https://<your-frontend>.onrender.com`
+
 ## Key Project Files
 
 - [README.md](G:\E-Library-System\README.md)
+- [render.yaml](G:\E-Library-System\render.yaml)
 - [.env.example](G:\E-Library-System\.env.example)
 - [docker-compose.yml](G:\E-Library-System\docker-compose.yml)
 - [backend/pom.xml](G:\E-Library-System\backend\pom.xml)
@@ -385,6 +411,7 @@ The current codebase reflects these notable updates:
 - Frontend Google sign-in flow added
 - OAuth success redirect handling added
 - Updated Docker-based local development configuration present in the repo
+- Render Blueprint configuration added for free deployment
 
 ## License
 
